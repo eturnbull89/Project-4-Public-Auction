@@ -21,6 +21,9 @@ public class AuctionHouse
     //Registration object, holds registration info set by auction central.
     private Registration houseReg;
 
+    //Socket connection with auction central
+    private Socket centralSocket;
+
     public static void main(String[] args) throws IOException
     {
         //Check that initial arguments number 4, if not throw an error message and exit
@@ -70,12 +73,23 @@ public class AuctionHouse
 
             try
             {
+                //Set the centralSocket field to the created socket for use later.
+                this.centralSocket = centralSocket;
+
                 //Receive back the registration object and set houseReg.
                 this.houseReg = (Registration) inFromCentral.readObject();
             }
             catch (ClassNotFoundException e)
             {
                 e.printStackTrace();
+            }
+            finally
+            {
+                //Close the object input stream from auction central.
+                inFromCentral.close();
+
+                //Close the object output stream from this auction house.
+                outFromHouse.close();
             }
 
         }
