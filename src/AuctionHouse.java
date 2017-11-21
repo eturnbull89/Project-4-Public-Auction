@@ -18,8 +18,8 @@ public class AuctionHouse
     //Port number of auction central
     private int centralPort;
 
-    //Registration object, holds registration info set by auction central.
-    private Registration houseReg;
+    //Confirmation object, holds registration info set by auction central.
+    private Confirmation houseReg;
 
     //Socket connection with auction central
     private Socket centralSocket;
@@ -51,8 +51,6 @@ public class AuctionHouse
 
         //Register with auction central and set houseReg field
         house.register(house.hostName, house.housePort, house.centralPort);
-
-
     }
 
     private void register(String hostName, int housePort, int centralPort) throws IOException
@@ -79,7 +77,7 @@ public class AuctionHouse
             try
             {
                 //Receive back the registration object and set houseReg.
-                this.houseReg = (Registration) inFromCentral.readObject();
+                this.houseReg = (Confirmation) inFromCentral.readObject();
             }
             catch (ClassNotFoundException e)
             {
