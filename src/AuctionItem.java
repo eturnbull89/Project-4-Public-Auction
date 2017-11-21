@@ -10,13 +10,17 @@ class AuctionItem implements Serializable
 
     private int currentBid;
 
-    AuctionItem(int houseId, int id, int minimumBid)
+    private final int auctionKey;
+
+    AuctionItem(int houseId, int id, int minimumBid, int key)
     {
         this.auctionHouseId = houseId;
 
         this.itemId = id;
 
         this.minimumBid = minimumBid;
+
+        this.auctionKey = key;
 
         this.currentBid = 0;
     }
