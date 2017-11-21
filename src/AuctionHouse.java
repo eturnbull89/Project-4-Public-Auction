@@ -68,14 +68,16 @@ public class AuctionHouse
                 ObjectInputStream inFromCentral = new ObjectInputStream(centralSocket.getInputStream())
                 )
         {
+            //Set the centralSocket field to the created socket for use later.
+            this.centralSocket = centralSocket;
+
             //Send auction central the house port number as its name
+            //On auction central side it will need to accept the input, this might need to be an object so that
+            //auction central can check it, process it, and then write back a registration object.
             outFromHouse.write(housePort);
 
             try
             {
-                //Set the centralSocket field to the created socket for use later.
-                this.centralSocket = centralSocket;
-
                 //Receive back the registration object and set houseReg.
                 this.houseReg = (Registration) inFromCentral.readObject();
             }
