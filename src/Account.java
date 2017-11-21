@@ -1,14 +1,16 @@
+import java.io.Serializable;
 import java.util.Hashtable;
 
 /**
- * Created by tristin on 11/18/2017.
+ * Account is abstract so Agents don't have any access to setters,
+ * only getters for the account
  */
-public abstract class Account
+public abstract class Account implements Serializable
 {
     private Bank bank;
     private double accountNumber;
     private double balance;
-    private String bankKey = "";   //is this right? Agent as a value and return a String as a key?
+    private Integer bankKey;   //is this right? Agent as a value and return a String as a key?
 
     //ideally, it would be nice if the account had access to the bank, not sure how to make happen though
     //without servers passing references
@@ -27,7 +29,7 @@ public abstract class Account
         return balance;
     }
 
-    public String getBankKey()
+    public Integer getBankKey()
     {
         return bankKey;
     }

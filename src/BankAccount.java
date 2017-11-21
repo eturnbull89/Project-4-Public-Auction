@@ -1,12 +1,15 @@
+import java.io.Serializable;
+
 /**
- * Created by tristin on 11/20/2017.
+ * BankAccount extends account so it has all of the getters, but also has setters for the account now.
+ * This version of the account will be used by the Bank.
  */
-public class BankAccount extends Account
+public class BankAccount extends Account implements Serializable
 {
     private Bank bank;
     private double accountNumber;
     private double balance;
-    private String bankKey = "";   //is this right? Agent as a value and return a String as a key?
+    private Integer bankKey;
 
     public BankAccount(Bank bank)
     {
@@ -23,7 +26,7 @@ public class BankAccount extends Account
         this.balance = balance;
     }
 
-    public void setBankKey(String bankKey)
+    public void setBankKey(Integer bankKey)
     {
         this.bankKey = bankKey;
     }
