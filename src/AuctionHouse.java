@@ -55,7 +55,7 @@ public class AuctionHouse
 
     private void register(String hostName, int housePort, int centralPort) throws IOException
     {
-        Registration centralReg = new Registration(houseName, housePort);
+        Registration centralReg = new Registration(houseName, housePort, hostName);
 
         try(
                 //Create the socket to talk to the auction central
@@ -71,10 +71,11 @@ public class AuctionHouse
             //Set the centralSocket field to the created socket for use later.
             this.centralSocket = centralSocket;
 
+            //Write to auction central the created registration.
+            outFromHouse.writeObject(centralReg);
+
             try
             {
-                outFromHouse.writeObject(centralReg);
-
                 //Receive back the registration object and set houseReg.
                 this.houseReg = (Confirmation) inFromCentral.readObject();
             }
