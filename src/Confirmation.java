@@ -6,7 +6,7 @@ class Confirmation implements Serializable
     private final int publicId;
 
     //Initially set as an int can change if needed.
-    private final int auctionKey;
+    private final Integer auctionKey;
 
     //Constructor for a Confirmation object, takes two ints id and key
     Confirmation(int id, int key)
