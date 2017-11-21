@@ -3,7 +3,7 @@ import java.util.Hashtable;
 /**
  * Created by tristin on 11/18/2017.
  */
-public class Account
+public abstract class Account
 {
     private Bank bank;
     private double accountNumber;
@@ -35,15 +35,5 @@ public class Account
     public double getAccountNumber()
     {
         return accountNumber;
-    }
-
-    public void setBalance(double balance)
-    {
-        this.balance = balance;
-    }
-
-    public void setAccountNumber(double accountNumber)
-    {
-        this.accountNumber = accountNumber;
     }
 }
