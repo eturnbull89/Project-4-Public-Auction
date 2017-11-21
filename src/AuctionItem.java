@@ -8,9 +8,16 @@ class AuctionItem implements Serializable
 
     private final int minimumBid;
 
-    private int currentBid;
+    private volatile int currentBid;
 
-    private final int auctionKey;
+    private final Integer auctionKey;
+
+    private Integer highestBidderKey;
+
+    private int previousBid;
+
+    private Integer previousBidderKey;
+
 
     AuctionItem(int houseId, int id, int minimumBid, int key)
     {
@@ -45,9 +52,14 @@ class AuctionItem implements Serializable
         return this.currentBid;
     }
 
-    void setCurrentBid(int amount)
+    synchronized void setCurrentBid(int amount, int auctionKey)
     {
-        this.currentBid = amount;
+        if(auctionKey == this.auctionKey)
+        {
+            this.currentBid = amount;
+        }
     }
+
+
 
 }
