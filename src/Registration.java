@@ -2,29 +2,24 @@ import java.io.Serializable;
 
 class Registration implements Serializable
 {
-    //The public id for the auction house, this should probably be the auction house port number
-    private final int publicId;
+    private final String houseName;
 
-    //Initially set as an int can change if needed.
-    private final int auctionKey;
+    private final int houseSocket;
 
-    //Constructor for a Registration object, takes two ints id and key
-    Registration(int id, int key)
+    Registration(String name, int socket)
     {
-       this.publicId = id;
+        this.houseName = name;
 
-       this.auctionKey = key;
+        this.houseSocket = socket;
     }
 
-    //Getter for id
-    int getPublicId()
+    String getHouseName()
     {
-        return publicId;
+        return this.houseName;
     }
 
-    //Getter for auction key
-    int getAuctionKey()
+    int getHouseSocket()
     {
-        return auctionKey;
+        return this.houseSocket;
     }
 }
