@@ -2,8 +2,12 @@ import java.io.Serializable;
 
 class AuctionItem implements Serializable
 {
+    //Used to indicate which house the item is stored at?
     private final int auctionHouseId;
 
+    private final String name;
+
+    //Used to id the item in question
     private final int itemId;
 
     private final int minimumBid;
@@ -19,9 +23,11 @@ class AuctionItem implements Serializable
     private Integer previousBidderKey;
 
 
-    AuctionItem(int houseId, int id, int minimumBid, int key)
+    AuctionItem(int houseId, String itemName, int id, int minimumBid, int key)
     {
         this.auctionHouseId = houseId;
+
+        this.name = itemName;
 
         this.itemId = id;
 
@@ -58,6 +64,11 @@ class AuctionItem implements Serializable
         {
             this.currentBid = amount;
         }
+    }
+
+    String getName()
+    {
+        return this.name;
     }
 
 
