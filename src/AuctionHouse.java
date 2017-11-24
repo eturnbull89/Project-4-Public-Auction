@@ -30,6 +30,8 @@ public class AuctionHouse
     //Int used to keep track of the list index between different auction houses
     private static int listIndex = 0;
 
+    private ArrayList<AuctionItem> items;
+
     public static void main(String[] args) throws IOException
     {
         //Check that initial arguments number 4, if not throw an error message and exit
@@ -62,6 +64,39 @@ public class AuctionHouse
 
         //Register with auction central and set houseReg field
         //house.register(house.houseHost, house.housePort, house.centralHost, house.centralPort);
+
+        //Commented out until it can be tested.
+        //Create a server socket for this auction house.
+        /*ServerSocket serverSocket;
+
+        //Boolean to keep the creating sockets for each agent that connects.
+        boolean listeningSocket = true;
+
+        try
+        {
+            //Create a server socket from the given house port number
+            serverSocket = new ServerSocket(house.housePort);
+
+            while(listeningSocket)
+            {
+                //Create a socket from the agent that connects to the auction house.
+                Socket clientSocket = serverSocket.accept();
+
+                //Create a miniHouse object for each agent that connects to auction central
+                MiniHouse mini = new MiniHouse(clientSocket, house.centralSocket, house.items);
+
+                //Start the miniHouse thread for each agent.
+                mini.start();
+            }
+
+            serverSocket.close();
+        }
+        catch (IOException e)
+        {
+            System.err.println("could not listen on port: "+ house.housePort);
+        }*/
+
+
     }
 
     //Method used to test out some of the auction house methods and confirm if they work.
