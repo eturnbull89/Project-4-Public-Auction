@@ -118,8 +118,11 @@ class MiniHouse extends Thread
         //The item the agent is bidding on.
         AuctionItem item = agentBid.getItemBiddingOn();
 
+        //Idex of the item based on the items id.
+        int itemIndex = item.getItemId();
+
         //If the agents bid amount is greater then the current bid create a new hold.
-        if(item.getCurrentBid() < agentBid.getBidAmount())
+        if(items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
         {
             //Create a transaction to pass to auction central.
             Transaction hold = new Transaction(agentKey, bidAmount, -1);
@@ -138,14 +141,67 @@ class MiniHouse extends Thread
                 e.printStackTrace();
             }
 
-            //If we were able to place a hold on the agents account.
-            if(holdConfirm)
+            //If we were able to place a hold on the agents account and the currentBid is still less then the
+            //agents bid. I did this extra check to make sure that the agents bid was still the highest bid after
+            //the possible time delay waiting for central to transmit its hold confirmation not sure if it is needed.
+            if(holdConfirm && items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
             {
-                //Update the items current bid amount.
-                item.setCurrentBid(bidAmount, houseKey);
+                //Transaction that will be used to release the previous agents funds.
+                Transaction release;
+
+                //Synchronize on the item in the items list to update the necessary fields before another agents thread
+                //can change them as well. This might be a problem later not sure yet.
+                synchronized (items.get(item.getItemId()))
+                {
+                    //Set the previousBid amount to the current bid amount.
+                    items.get(item.getItemId()).setPreviousBid(item.getCurrentBid());
+
+                    //Set the previousBidderKey to current highestBidderKey value.
+                    items.get(item.getItemId()).setPreviousBidderKey(item.getHighestBidderKey());
+
+                    //Update the items current bid amount.
+                    items.get(item.getItemId()).setCurrentBid(bidAmount, houseKey);
+
+                    //Update the highestBidderKey to the agents key
+                    items.get(item.getItemId()).setHighestBidKey(agentKey);
+
+                    //Set release to a new transaction.
+                    release = new Transaction(items.get(item.getItemId()).getPreviousBidderKey(),
+                                              items.get(item.getItemId()).getPreviousBid(), 1);
+                }
+
+                try
+                {
+                    //Send the Transaction to auction central.
+                    toCentral.writeObject(release);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
 
                 //Update the bid status on the bid.
                 agentBid.setBidStatus("acceptance");
+            }
+
+            //If we were able to confirm a hold but the current bid changed in the time it took to get a confirmation
+            else if(holdConfirm && items.get(itemIndex).getCurrentBid() > agentBid.getBidAmount())
+            {
+                //Create a new transaction to release the agents previous hold.
+                Transaction releaseAgent = new Transaction(agentKey, bidAmount, 1);
+
+                try
+                {
+                    //Send the transaction to central.
+                    toCentral.writeObject(releaseAgent);
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+
+                //Set the bid status to pass.
+                agentBid.setBidStatus("pass");
             }
 
             //If we were not able to place a hold on the agents account.
