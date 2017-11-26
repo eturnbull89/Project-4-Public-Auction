@@ -15,8 +15,11 @@ class MiniHouse extends Thread
     //List of items for sale by this auction house.
     private ArrayList<AuctionItem> items = null;
 
+    //The key used by the auction house, used to update the current bid amount on an item.
+    private final Integer houseKey;
+
     //Constructor for a mini auction house.
-    MiniHouse(Socket agent, Socket central, ArrayList<AuctionItem> items)
+    MiniHouse(Socket agent, Socket central, ArrayList<AuctionItem> items, Integer houseKey)
     {
         //set the agent socket variable.
         this.agentSocket = agent;
@@ -26,6 +29,9 @@ class MiniHouse extends Thread
 
         //Set the items variable.
         this.items = items;
+
+        //Set the houseKey variable to the auction house key.
+        this.houseKey = houseKey;
     }
 
     public void run()
@@ -50,14 +56,22 @@ class MiniHouse extends Thread
             //while listening is true continue to processes an agents requests.
             while(listening)
             {
+                Object passed = inFromAgent.readObject();
+
                 //If the object that is read is a bid handel bidding procedure.
-                if((inFromAgent.readObject()) instanceof Bid)
+                if(passed instanceof Bid)
                 {
-                    System.out.println("Handling bid.");
+                    //Create a bid to pass back to the agent.
+                    Bid passedBid = bidProtocol(fromCentral, toCentral, (Bid) passed);
+
+                    //Write the created bid back to the agent.
+                    outFromHouse.writeObject(passedBid);
+
+                    //Implement a timer here if the bid was accepted.
                 }
 
                 //If the object is a string.
-                else if((inFromAgent.readObject()) instanceof String)
+                else if(passed instanceof String)
                 {
                     //Store the message in a string and set its font to lower case.
                     String message = inFromAgent.readObject().toString().toLowerCase();
@@ -71,7 +85,7 @@ class MiniHouse extends Thread
                     //If the string is equal to list return the item list to the agent.
                     else if(message.equals("list"))
                     {
-                        System.out.println("returning list.");
+                        outFromHouse.writeObject(items);
                     }
 
                     //If the message is something else return an error message for agent to process.
@@ -88,8 +102,65 @@ class MiniHouse extends Thread
         {
             e.printStackTrace();
         }
-
-
     }
 
+    private Bid bidProtocol(ObjectInputStream fromCentral, ObjectOutputStream toCentral, Bid agentBid)
+    {
+        //Boolean used to confirm if auction central was able to place a hold on the agents account.
+        Boolean holdConfirm = false;
+
+        //The agents bid key, used by auction central
+        Integer agentKey = agentBid.getAgentBidKey();
+
+        //The amount the agent wishes to bid.
+        int bidAmount = agentBid.getBidAmount();
+
+        //The item the agent is bidding on.
+        AuctionItem item = agentBid.getItemBiddingOn();
+
+        //If the agents bid amount is greater then the current bid create a new hold.
+        if(item.getCurrentBid() < agentBid.getBidAmount())
+        {
+            //Create a transaction to pass to auction central.
+            Transaction hold = new Transaction(agentKey, bidAmount, -1);
+
+            try
+            {
+                //Write the Transaction object to central
+                toCentral.writeObject(hold);
+
+                //Get centrals confirmation of hold.
+                holdConfirm = (Boolean) fromCentral.readObject();
+
+            }
+            catch (IOException | ClassNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+
+            //If we were able to place a hold on the agents account.
+            if(holdConfirm)
+            {
+                //Update the items current bid amount.
+                item.setCurrentBid(bidAmount, houseKey);
+
+                //Update the bid status on the bid.
+                agentBid.setBidStatus("acceptance");
+            }
+
+            //If we were not able to place a hold on the agents account.
+            else
+            {
+                agentBid.setBidStatus("rejection");
+            }
+        }
+
+        //The bid amount was lower or equal to the current bid amount.
+        else
+        {
+            agentBid.setBidStatus("pass");
+        }
+
+        return agentBid;
+    }
 }
