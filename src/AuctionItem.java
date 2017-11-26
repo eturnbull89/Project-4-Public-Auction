@@ -105,7 +105,7 @@ class AuctionItem implements Serializable
     //is the same auction key stored in the item. If it is it sets the current bid field to the amount passed to it. It
     //is synchronized to prevent multiple threads from changing the value at once.
     //***********************************
-    synchronized void setCurrentBid(int amount, Integer auctionKey)
+    void setCurrentBid(int amount, Integer auctionKey)
     {
         //Check if the auction key passed is the same as the auction key the item was created with.
         if(auctionKey.equals(this.auctionKey))
