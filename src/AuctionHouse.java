@@ -83,7 +83,7 @@ public class AuctionHouse
                 Socket clientSocket = serverSocket.accept();
 
                 //Create a miniHouse object for each agent that connects to auction central
-                MiniHouse mini = new MiniHouse(clientSocket, house.centralSocket, house.items);
+                MiniHouse mini = new MiniHouse(clientSocket, house.centralSocket, house.items, house.houseReg.getAuctionKey());
 
                 //Start the miniHouse thread for each agent.
                 mini.start();
