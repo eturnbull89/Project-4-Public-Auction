@@ -151,23 +151,23 @@ class MiniHouse extends Thread
 
                 //Synchronize on the item in the items list to update the necessary fields before another agents thread
                 //can change them as well. This might be a problem later not sure yet.
-                synchronized (items.get(item.getItemId()))
+                synchronized (items.get(itemIndex))
                 {
                     //Set the previousBid amount to the current bid amount.
-                    items.get(item.getItemId()).setPreviousBid(item.getCurrentBid());
+                    items.get(itemIndex).setPreviousBid(items.get(itemIndex).getCurrentBid());
 
                     //Set the previousBidderKey to current highestBidderKey value.
-                    items.get(item.getItemId()).setPreviousBidderKey(item.getHighestBidderKey());
+                    items.get(itemIndex).setPreviousBidderKey(items.get(itemIndex).getHighestBidderKey());
 
                     //Update the items current bid amount.
-                    items.get(item.getItemId()).setCurrentBid(bidAmount, houseKey);
+                    items.get(itemIndex).setCurrentBid(bidAmount, houseKey);
 
                     //Update the highestBidderKey to the agents key
-                    items.get(item.getItemId()).setHighestBidKey(agentKey);
+                    items.get(itemIndex).setHighestBidKey(agentKey);
 
                     //Set release to a new transaction.
-                    release = new Transaction(items.get(item.getItemId()).getPreviousBidderKey(),
-                                              items.get(item.getItemId()).getPreviousBid(), 1);
+                    release = new Transaction(items.get(itemIndex).getPreviousBidderKey(),
+                                              items.get(itemIndex).getPreviousBid(), 1);
                 }
 
                 try
