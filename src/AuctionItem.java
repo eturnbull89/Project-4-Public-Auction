@@ -8,14 +8,15 @@ class AuctionItem implements Serializable
     //Name of the given auction house, is passed to auction house as a command line argument.
     private final String name;
 
-    //Used to id the item in question
+    //Used to id the item in question, is the items index in its list
     private final int itemId;
 
     //The initial minimum bid amount, this is initially given in the sale list.
     private final int minimumBid;
 
-    //Field to keep track of an items current bid amount
-    private int currentBid;
+    //Field to keep track of an items current bid amount, is volatile to check if current bid is updated by
+    //between agent bids.
+    private volatile int currentBid;
 
     //Field to hold an auctionHouses auction key, used to update an items current bid amount.
     private final Integer auctionKey;
@@ -104,7 +105,7 @@ class AuctionItem implements Serializable
     //is the same auction key stored in the item. If it is it sets the current bid field to the amount passed to it. It
     //is synchronized to prevent multiple threads from changing the value at once.
     //***********************************
-    synchronized void setCurrentBid(int amount, Integer auctionKey)
+    void setCurrentBid(int amount, Integer auctionKey)
     {
         //Check if the auction key passed is the same as the auction key the item was created with.
         if(auctionKey.equals(this.auctionKey))
