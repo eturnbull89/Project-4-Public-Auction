@@ -55,7 +55,7 @@ public class Bank implements Serializable
     if (wonAuction())
     {
       //Transfer fundsinHold to auction house
-      temp.deductHoldAmount();
+      temp.deductHoldAmount(amount);
     } else
     {
       temp.clearHold();

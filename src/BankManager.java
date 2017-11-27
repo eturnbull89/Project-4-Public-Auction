@@ -29,7 +29,7 @@ public class BankManager
 
         bank.createNewAccount(acct.getAccountName());
 
-        AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()));
+        AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()), bank.getAccount(bank.getBankKey(acct.getAccountName())).getAccountNumber());
 
         out.writeObject(userKey);
 

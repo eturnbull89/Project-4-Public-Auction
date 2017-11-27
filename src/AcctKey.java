@@ -4,6 +4,7 @@
 public class AcctKey
 {
   private Integer acctKey;
+  private Integer acctNum;
 
   //********************************************************************************************************************
   //Parameters:
@@ -11,8 +12,9 @@ public class AcctKey
   //
   //Constructor sets the acctKey to Key
   //********************************************************************************************************************
-  public AcctKey(Integer key)
+  public AcctKey(Integer key, Integer accountNumber)
   {
+    this.acctNum = accountNumber;
     this.acctKey = key;
   }
 
@@ -25,4 +27,11 @@ public class AcctKey
   {
     return acctKey;
   }
+
+  //********************************************************************************************************************
+  //Parameters: none
+  //
+  //Method returns the acctNum
+  //********************************************************************************************************************
+  public Integer getAccountNumber() { return acctNum; }
 }
