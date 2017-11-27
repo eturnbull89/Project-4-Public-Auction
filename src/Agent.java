@@ -79,15 +79,10 @@ public class Agent
             System.out.println(agent.bankAccount.getAccountNumber());
             System.out.println(agent.bankAccount.getKey());
 
-            outBank.writeObject("Inquire");
-            outBank.writeObject(agent.bankAccount.getKey());
+            agent.inquireBankBalance(agentBankSocket, inBank, outBank);
 
-            String balance = (String) inBank.readObject();
-            System.out.println(balance);
+            agent.pollUserInput(agentBankSocket, inBank, outBank, auctionCentralHostName, auctioCenPortNumber);
 
-            agent.pollUserInput(auctionCentralHostName, auctioCenPortNumber);
-
-            //agent.inquireBankBalance();
                                                                         //then auction central register
 //            outAuctionCen.writeObject(agent.bankAccount.getKey());  //give the auction central the agents bank key
 //            outAuctionCen.writeObject(agent.agentName);                 //give the auction central our name, i dont think this is needed but from romans spec
@@ -114,18 +109,14 @@ public class Agent
          */
     }
 
-    public void inquireBankBalance() throws IOException, ClassNotFoundException
+    public void inquireBankBalance(Socket bankSocket, ObjectInputStream bankIn, ObjectOutputStream bankOut)
+            throws IOException, ClassNotFoundException
     {
-        System.out.println("In inquiry");
-        String bankHostName = "localhost";
-        int bankPortNumber = 30000;
-        Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);  //setup bank socket
-
-        ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream()); //setup object output first for bank
-        ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream()); //setup object input after output for bank
-
-
-
+        bankOut.writeObject("Inquire");
+        bankOut.writeObject(bankAccount.getKey());
+    
+        String balance = (String) bankIn.readObject();
+        System.out.println(balance + "\n");
     }
 
     /**
@@ -135,18 +126,24 @@ public class Agent
      * @throws UnknownObjectException
      * @throws IOException
      */
-    public void pollUserInput(String hostName, int auctionCenPortNumber) throws UnknownObjectException, IOException
+    public void pollUserInput(Socket bankSocket, ObjectInputStream bankIn, ObjectOutputStream bankOut,
+                              String hostName, int auctionCenPortNumber) throws UnknownObjectException, IOException, ClassNotFoundException
     {
         Scanner sc = new Scanner(System.in);
-        String input = sc.next();
+        String input = "";
         while(!input.equals("Exit"))
         {
-            System.out.println("Would you like to " +
-                    "(1) see list of auction houses ");
-            input = Integer.toString(sc.nextInt());
+            System.out.println("Please enter the key corresponding to what you want to do\n" +
+                    "(1) see list of auction houses \n" +
+                    "($) see current account balance");
+            input = sc.next();
             if(input.equals("1"))
             {
                 askForAuctionHouses(hostName, auctionCenPortNumber);  //will talk over socket to auction central
+            }
+            else if(input.equals("$"))
+            {
+                inquireBankBalance(bankSocket, bankIn, bankOut);
             }
 
         }
@@ -174,7 +171,7 @@ public class Agent
             outAuctionCen.writeObject(requestForAuctionHouses);
             outAuctionCen.flush();
 
-            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();   //would be a list of AuctionHouses but set to String for now
+            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();
             printListOfAuctionHouses(listOfAuctionHouses);
 
             System.out.println("Which auction house would you like to join?");
@@ -203,7 +200,7 @@ public class Agent
      */
     public void joinAuctionHouse(ArrayList<Registration> listOfAuctionHouses, int auctionHouseNum, String hostname) throws IOException, ClassNotFoundException
     {
-        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum);  //get the auction house we're joining. i think this will really just be a port number for a socket so we can communicate
+        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum);
 
         Socket auctionHouseSocket = new Socket("FILLIN", 1234);   //this is all temp with the actual values, just setting up a skeleton
         ObjectOutputStream outAuctionHouse = new ObjectOutputStream(auctionHouseSocket.getOutputStream());
@@ -219,14 +216,15 @@ public class Agent
         System.out.println("Which auction item would you like to bid on?");
         Scanner sc = new Scanner(System.in);
         int itemNumber = sc.nextInt();
-
         AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
-        //itemBiddingOn.getCurrentBid   //will display the current bid for the item they're bidding on
+        System.out.println(itemBiddingOn.getCurrentBid());
+
         System.out.println("How much would you like to bid?");
         int bidAmount = sc.nextInt();
-        outAuctionHouse.writeObject(biddingKey);
-        outAuctionHouse.writeObject(itemBiddingOn);
-        outAuctionHouse.writeObject(bidAmount);
+        Bid agentBidOnItem = new Bid(bankAccount.getKey(), itemBiddingOn);
+        agentBidOnItem.setBidAmount(bidAmount);
+
+        outAuctionHouse.writeObject(agentBidOnItem);
     }
 
     public void printListOfAuctionItems(ArrayList<AuctionItem> auctionItems)
