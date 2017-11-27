@@ -13,7 +13,7 @@ public class BankManager
     try
     {
 
-      ServerSocket server = new ServerSocket(1026);
+      ServerSocket server = new ServerSocket(30000);
 
       Socket client = server.accept();
 
@@ -26,10 +26,11 @@ public class BankManager
       if (inObj instanceof UserAccount)
       {
         UserAccount acct = (UserAccount) inObj;
-
+        System.out.println(acct.getAccountName());
         bank.createNewAccount(acct.getAccountName());
 
         AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()), bank.getAccount(bank.getBankKey(acct.getAccountName())).getAccountNumber());
+        System.out.println(userKey.getKey() + "   " + userKey.getAccountNumber());
 
         out.writeObject(userKey);
 

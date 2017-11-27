@@ -1,7 +1,9 @@
+import java.io.Serializable;
+
 /**
  * Created by adam on 11/24/17.
  */
-public class AcctKey
+public class AcctKey implements Serializable
 {
   private Integer acctKey;
   private Integer acctNum;

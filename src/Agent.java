@@ -19,7 +19,7 @@ import java.util.Scanner;
 public class Agent
 {
     private String agentName = "Test1234";   //to have 100% unique agent IDs I think the names would have to be made from a server
-    private Account bankAccount;    //given from a bank
+    private AcctKey bankAccount;    //given from a bank
     private Integer biddingKey;      //given when registered with auction central
     //private AuctionCentral
     //private AuctionHouse
@@ -40,31 +40,32 @@ public class Agent
 
     public static void main(String[] args) throws IOException, UnknownObjectException, ClassNotFoundException
     {
-        if(args.length != 4)
-        {
-            System.err.println("Please retry and input the bank hostName, auction central hostname, portNumber of the bank, and the portNumber "
-                                + "of the auction central");
-            System.exit(1);
-        }
+//        if(args.length != 4)
+//        {
+//            System.err.println("Please retry and input the bank hostName, auction central hostname, portNumber of the bank, and the portNumber "
+//                                + "of the auction central");
+//            System.exit(1);
+//        }
 
         //String bankHostName = args[0];  //bank host name will be first argument
-        String bankHostName = "10.82.136.76";
-        String auctionCentralHostName = args[1]; //AC host name will be 2nd arg
+        String bankHostName = "localhost";
+        int bankPortNumber = 30000;
+
+        String auctionCentralHostName = ""; //AC host name will be 2nd arg
+        int auctioCenPortNumber = 0;  //port number for auction central will be fourth
         //int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
-        int bankPortNumber = 1026;
-        int auctioCenPortNumber = Integer.parseInt(args[3]);  //port number for auction central will be fourth
 
         Agent agent = new Agent();
 
         try(
             Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);  //setup bank socket
-            Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctioCenPortNumber); //setup auction central socket
+            //Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctioCenPortNumber); //setup auction central socket
 
             ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream()); //setup object output first for bank
             ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream()); //setup object input after output for bank
 
-            ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
-            ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
+            //ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
+            //ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
         )
         {
             UserAccount myAccount = new UserAccount(agent.agentName);
@@ -72,13 +73,15 @@ public class Agent
             //sets up bank account initially
             outBank.writeObject(myAccount); //give the Bank the agents name to register a bank account
             outBank.flush();
-            agent.bankAccount = (Account) inBank.readObject(); //read the object sent from the bank account and cast it as an account so we have no access to generators
-
+            agent.bankAccount = (AcctKey) inBank.readObject(); //read the object sent from the bank account and cast it as an account so we have no access to generators
+            System.out.println("read in acct key");
+            System.out.println(agent.bankAccount.getAccountNumber());
+            System.out.println(agent.bankAccount.getKey());
                                                                         //then auction central register
-            outAuctionCen.writeObject(agent.bankAccount.getBankKey());  //give the auction central the agents bank key
-            outAuctionCen.writeObject(agent.agentName);                 //give the auction central our name, i dont think this is needed but from romans spec
-            outAuctionCen.flush();
-            agent.biddingKey = (Integer) inAuctionCen.readObject();      //wait until we receive our bidding key from the auction central
+//            outAuctionCen.writeObject(agent.bankAccount.getKey());  //give the auction central the agents bank key
+//            outAuctionCen.writeObject(agent.agentName);                 //give the auction central our name, i dont think this is needed but from romans spec
+//            outAuctionCen.flush();
+//            agent.biddingKey = (Integer) inAuctionCen.readObject();      //wait until we receive our bidding key from the auction central
         }
         catch (UnknownHostException e)
         {
@@ -87,8 +90,7 @@ public class Agent
         }
         catch (IOException e)
         {
-            System.err.println("Couldn't get I/O for the connection to " +
-                    bankHostName);
+            System.out.println(e);
             System.exit(1);
         }
 
