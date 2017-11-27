@@ -1,6 +1,13 @@
 /**
- * Created by tristin on 11/21/2017.
+ * =============================================
+ * Project 4 Public Auction - CS 351 UNM
+ * @authors Tristin Glunt  | tglunt@unm.edu
+ *          Zach Fleharty  |
+ *          Eric Turnbull  |
+ *          Adam Spanswick |
+ * =============================================
  */
+
 public class Bid
 {
     private final AuctionItem itemBiddingOn;

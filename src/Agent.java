@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 import java.rmi.activation.UnknownObjectException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Set;
 
 /**
  * =============================================
@@ -50,49 +51,64 @@ public class Agent
 
         //String bankHostName = args[0];  //bank host name will be first argument
         //int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
-        String bankHostName = "localhost";
-        int bankPortNumber = 30000;
+//        String bankHostName = "localhost";
+//        int bankPortNumber = 1026;
 
-        String auctionCentralHostName = ""; //AC host name will be 2nd arg
-        int auctioCenPortNumber = 0;  //port number for auction central will be fourth
+        String auctionCentralHostName = "10.82.150.178"; //AC host name will be 2nd arg
+        int auctionCenPortNumber = 1027;  //port number for auction central will be fourth
 
-        try(
-            Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
-            //Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctioCenPortNumber);
-
-            ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
-            ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream());
-
-            //ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
-            //ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
-        )
+        try
         {
+//            Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
+            Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctionCenPortNumber);
+
+//            ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
+//            outBank.flush();
+//            ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream());
+
+            ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
+            outAuctionCen.flush();
+            ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
+
             //sets up bank account initially
-            UserAccount myAccount = new UserAccount(agent.agentName);
-            outBank.writeObject(myAccount);
-            outBank.flush();
-            agent.bankAccount = (AcctKey) inBank.readObject();
+//            UserAccount myAccount = new UserAccount(agent.agentName);
+//            System.out.println("trying to write object to bank..");
+//            outBank.writeObject(myAccount);
+//            outBank.flush();
+//            agent.bankAccount = (AcctKey) inBank.readObject();
+//
+//            System.out.println("read in acct key");
+//            System.out.println(agent.bankAccount.getAccountNumber());
+//            System.out.println(agent.bankAccount.getKey());
 
-            System.out.println("read in acct key");
-            System.out.println(agent.bankAccount.getAccountNumber());
-            System.out.println(agent.bankAccount.getKey());
+            //outAuctionCen.writeObject(agent.agentName);
+            System.out.println("trying to write object to ac...");
+            Integer tempIntObj = 123;
+            outAuctionCen.writeObject(tempIntObj);
+            outAuctionCen.flush();
 
-            agent.inquireBankBalance(agentBankSocket, inBank, outBank);
-            agent.pollUserInput(agentBankSocket, inBank, outBank, auctionCentralHostName, auctioCenPortNumber);
+            System.out.println("trying to read object from ac...");
+            agent.biddingKey = (Integer) inAuctionCen.readObject();
+            //agent.inquireBankBalance(agentBankSocket, inBank, outBank);
+            System.out.println(agent.biddingKey.toString());
+            outAuctionCen.writeObject("hey");
+            Set<Registration> auctionHouses = (Set<Registration>) inAuctionCen.readObject();
+            agent.printListOfAuctionHouses(auctionHouses);
+            while(true)
+            {
 
-//            outAuctionCen.writeObject(agent.bankAccount.getKey());
-//            outAuctionCen.writeObject(agent.agentName);
-//            outAuctionCen.flush();
-//            agent.biddingKey = (Integer) inAuctionCen.readObject();
+            }
+            //agent.pollUserInput(agentBankSocket, inBank, outBank, auctionCentralHostName, auctionCenPortNumber);
         }
         catch (UnknownHostException e)
         {
-            System.err.println("Don't know about host " + bankHostName);
+            e.printStackTrace();
+            System.err.println("Don't know about host ");
             System.exit(1);
         }
         catch (IOException e)
         {
-            System.out.println(e);
+            e.printStackTrace();
             System.exit(1);
         }
     }
@@ -115,7 +131,7 @@ public class Agent
         {
             System.out.println("Please enter the key corresponding to what you want to do\n" +
                     "(1) see list of auction houses \n" +
-                    "($) see current account balance\n " +
+                    "($) see current account balance\n" +
                     "(Exit) to exit");
             input = sc.next();
             if(input.equals("1"))
@@ -126,7 +142,7 @@ public class Agent
             {
                 inquireBankBalance(bankSocket, bankIn, bankOut);
             }
-            else
+            else if(!input.equals("Exit"))
             {
                 System.out.println("Please enter a valid input.");
             }
@@ -155,7 +171,7 @@ public class Agent
             outAuctionCen.flush();
 
             ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();
-            printListOfAuctionHouses(listOfAuctionHouses);
+            //printListOfAuctionHouses(listOfAuctionHouses);
 
             System.out.println("Which auction house would you like to join?");
             Scanner sc = new Scanner(System.in);
@@ -235,13 +251,13 @@ public class Agent
         }
     }
 
-    private void printListOfAuctionHouses(ArrayList<Registration> auctionHouses)
+    private void printListOfAuctionHouses(Set<Registration> auctionHouses)
     {
         int counter = 0;
         for(Registration ah : auctionHouses)
         {
             counter++;
-            System.out.println(counter + ". " + ah);
+            System.out.println(counter + ". " + ah.getHouseName());
         }
     }
 

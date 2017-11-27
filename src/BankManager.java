@@ -10,7 +10,7 @@ public class BankManager
 
         try
         {
-            ServerSocket server = new ServerSocket(30000);
+            ServerSocket server = new ServerSocket(1026);
 
             Socket client = server.accept();
 
