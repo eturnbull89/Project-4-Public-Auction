@@ -56,21 +56,17 @@ public class BankManager
         out.close();
         client.close();
       }
-//        else if (inObj instanceof String)
-//        {
-//          System.out.println("test");
-//          String message = "Adam: connection works";
-//
-//          String inMessage = (String) inObj;
-//
-//          System.out.println(inMessage);
-//
-//          out.writeObject(message);
-//
-//          in.close();
-//          out.close();
-//          client.close();
-//        }
+        else if (inObj instanceof String)
+        {
+          String inMessage = (String) inObj;
+          System.out.println(inMessage);
+
+          out.writeObject();
+
+          in.close();
+          out.close();
+          client.close();
+        }
     }
     catch (IOException ee)
     {

@@ -77,6 +77,7 @@ public class Agent
             System.out.println("read in acct key");
             System.out.println(agent.bankAccount.getAccountNumber());
             System.out.println(agent.bankAccount.getKey());
+            agent.inquireBankBalance();
                                                                         //then auction central register
 //            outAuctionCen.writeObject(agent.bankAccount.getKey());  //give the auction central the agents bank key
 //            outAuctionCen.writeObject(agent.agentName);                 //give the auction central our name, i dont think this is needed but from romans spec
@@ -102,6 +103,22 @@ public class Agent
             Will be commented out for now because we first want to test if registering with Bank and Auction Central work
          */
         //agent.pollUserInput(hostName, auctioCenPortNumber);
+    }
+
+    public void inquireBankBalance() throws IOException, ClassNotFoundException
+    {
+        String bankHostName = "localhost";
+        int bankPortNumber = 30000;
+        Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);  //setup bank socket
+
+        ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream()); //setup object output first for bank
+        ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream()); //setup object input after output for bank
+
+        outBank.writeObject("Inquire");
+        outBank.writeObject(bankAccount.getKey());
+
+        String balance = (String) inBank.readObject();
+        System.out.println(balance);
     }
 
     /**
