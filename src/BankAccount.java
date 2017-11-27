@@ -14,10 +14,11 @@ public class BankAccount extends Account implements Serializable
     private int fundsInHold = 0;
     private Integer accountNumber;
 
-//    public BankAccount(Bank bank)
-//    {
-//        super(bank);
-//    }
+    public BankAccount()
+    {
+        generateAccountNumber();
+        generatebankKey();
+    }
 
     public void setAccountNumber(Integer accountNumber)
     {
