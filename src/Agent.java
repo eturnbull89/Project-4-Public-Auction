@@ -47,9 +47,11 @@ public class Agent
             System.exit(1);
         }
 
-        String bankHostName = args[0];  //bank host name will be first argument
+        //String bankHostName = args[0];  //bank host name will be first argument
+        String bankHostName = "10.82.136.76";
         String auctionCentralHostName = args[1]; //AC host name will be 2nd arg
-        int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
+        //int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
+        int bankPortNumber = 1026;
         int auctioCenPortNumber = Integer.parseInt(args[3]);  //port number for auction central will be fourth
 
         Agent agent = new Agent();
@@ -64,8 +66,11 @@ public class Agent
             ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
             ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
         )
-        {   //sets up bank account initially
-            outBank.writeObject(agent.agentName); //give the Bank the agents name to register a bank account
+        {
+            UserAccount myAccount = new UserAccount(agent.agentName);
+
+            //sets up bank account initially
+            outBank.writeObject(myAccount); //give the Bank the agents name to register a bank account
             outBank.flush();
             agent.bankAccount = (Account) inBank.readObject(); //read the object sent from the bank account and cast it as an account so we have no access to generators
 
