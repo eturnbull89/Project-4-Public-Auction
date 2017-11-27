@@ -8,7 +8,8 @@ public class Transaction {
      * -1 is for placing a hold
      * 1 is for releasing a hold
      * 0 is for withdrawing money*/
-    public Transaction(Integer key, int amount, int request){
+    public Transaction(Integer key, int amount, int request)
+    {
         this.amount = amount;
         this.request = request;
         bankKey = key;
