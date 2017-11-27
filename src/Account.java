@@ -9,7 +9,7 @@ public abstract class Account implements Serializable
 {
 //    private Bank bank;
     private Integer accountNumber;
-    private double balance;
+    private Double balance;
     private Integer bankKey;   //is this right? Agent as a value and return a String as a key?
 
     //ideally, it would be nice if the account had access to the bank, not sure how to make happen though
@@ -24,7 +24,7 @@ public abstract class Account implements Serializable
         return;
     }
 
-    public double getBalance()
+    public Double getBalance()
     {
         return balance;
     }

@@ -7,8 +7,7 @@ import java.util.Random;
  */
 public class BankAccount extends Account implements Serializable
 {
-    private Bank bank;
-    private double balance = 100;
+    private Double balance = 100d;
     private Integer bankKey;
     private String name = null;
     private int fundsInHold = 0;
@@ -48,20 +47,6 @@ public class BankAccount extends Account implements Serializable
     //********************************************************************************************************************
     //Parameters: none
     //
-    //Method sets the bank key to a random 3 digit number
-    //Need to add a check so no duplicated can be generated
-    //********************************************************************************************************************
-    private void generatebankKey()
-    {
-        Random rand = new Random();
-        Integer n = rand.nextInt(999) + 100;
-
-        this.bankKey = n;
-    }
-
-    //********************************************************************************************************************
-    //Parameters: none
-    //
     //Method returns a Integer object that is the account number.
     //********************************************************************************************************************
     public Integer getAccountNumber()
@@ -84,7 +69,7 @@ public class BankAccount extends Account implements Serializable
     //
     //Method returns a int that is the current account balance.
     //********************************************************************************************************************
-    public double getBalance()
+    public Double getBalance()
     {
         return balance;
     }
@@ -184,17 +169,34 @@ public class BankAccount extends Account implements Serializable
     //Method checks if there are funds in hold, if there are it prints the available balance and the funds in hold. If not
     //it prints only the available balance.
     //********************************************************************************************************************
-    public void inquiry()
+    public String inquiry()
     {
+        String messgae = "";
+
         if(fundsInHold != 0)
         {
-            System.out.println("Available Balance: " + getBalance());
-            System.out.println("Funds in hold: " + getHoldBalance());
+            messgae += "Available Balance: " + getBalance() +"\n";
+            messgae += "Funds in hold: " + getHoldBalance();
         }
         else
         {
-            System.out.println("Available Balance: " + getBalance());
+            messgae += "Available Balance: " + getBalance();
         }
+        return messgae;
+    }
+
+    //********************************************************************************************************************
+    //Parameters: none
+    //
+    //Method sets the bank key to a random 3 digit number
+    //Need to add a check so no duplicated can be generated
+    //********************************************************************************************************************
+    private void generatebankKey()
+    {
+        Random rand = new Random();
+        Integer n = rand.nextInt(999) + 100;
+
+        this.bankKey = n;
     }
 
     //********************************************************************************************************************
