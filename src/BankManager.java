@@ -20,7 +20,10 @@ public class BankManager
 
             while (true)
             {
+                out.flush();
+                System.out.println("trying to read object");
                 inObj = in.readObject();
+                System.out.println("read object");
 
                 if (inObj instanceof UserAccount)
                 {
@@ -61,6 +64,7 @@ public class BankManager
 
                     if (inObj instanceof Integer)
                     {
+                        System.out.println("bank key received");
                         Integer key = (Integer) inObj;
 
                         out.writeObject(bank.getAccount(key).inquiry());
@@ -71,7 +75,8 @@ public class BankManager
 //          client.close();
                 }
             }
-        } catch(IOException ee)
+        }
+        catch(IOException ee)
         {
             ee.printStackTrace();
         } catch(ClassNotFoundException e)
