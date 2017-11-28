@@ -6,82 +6,120 @@ public class BankManager
     public static void main(String[] args)
     {
         Bank bank = new Bank();
-        Object inObj;
 
         try
         {
-            ServerSocket server = new ServerSocket(1026);
+            ServerSocket acServerConnect = new ServerSocket(1026);
+            Socket clientAC = acServerConnect.accept();
 
-            Socket client = server.accept();
+            ObjectOutputStream acOut = new ObjectOutputStream(clientAC.getOutputStream());
+            acOut.flush();
+            ObjectInputStream acIn = new ObjectInputStream(clientAC.getInputStream());
 
-            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
-            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-            out.flush();
+            ServerSocket agentServerConnect = new ServerSocket(1031);
+            Socket clientAgent = agentServerConnect.accept();
 
-            while (true)
-            {
-                out.flush();
-                System.out.println("trying to read object");
-                inObj = in.readObject();
-                System.out.println("read object");
+            ObjectOutputStream agentOut = new ObjectOutputStream(clientAgent.getOutputStream());
+            agentOut.flush();
+            ObjectInputStream agentIn = new ObjectInputStream(clientAgent.getInputStream());
 
-                if (inObj instanceof UserAccount)
-                {
-                    UserAccount acct = (UserAccount) inObj;
-                    System.out.println(acct.getAccountName());
-                    bank.createNewAccount(acct.getAccountName());
+            BankServerCommunication readingForAgent = new BankServerCommunication(bank, clientAgent, agentOut, agentIn);
+            BankServerCommunication commWithAuctionCentral = new BankServerCommunication(bank, clientAC, acOut, acIn);
 
-                    AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()), bank.getAccount(bank.getBankKey(acct.getAccountName())).getAccountNumber());
-                    System.out.println(userKey.getKey() + "   " + userKey.getAccountNumber());
-
-                    out.writeObject(userKey);
-
-//          in.close();
-//          out.close();
-//          client.close();
-                }
-                else if (inObj instanceof Transaction)
-                {
-                    Transaction newTrans = (Transaction) inObj;
-
-                    if (newTrans.request == -1) //Place amount in hold
-                    {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).setHoldBalance(newTrans.amount));
-                    } else if (newTrans.request == 1) //Release the funds in hold back to user's account
-                    {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).clearHold());
-                    } else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
-                    {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).deductHoldAmount(newTrans.amount));
-                    }
-
-//          in.close();
-//          out.close();
-//          client.close();
-                } else if (inObj instanceof String)
-                {
-                    inObj = in.readObject();
-
-                    if (inObj instanceof Integer)
-                    {
-                        System.out.println("bank key received");
-                        Integer key = (Integer) inObj;
-
-                        out.writeObject(bank.getAccount(key).inquiry());
-                    }
-
-//          in.close();
-//          out.close();
-//          client.close();
-                }
-            }
         }
         catch(IOException ee)
         {
             ee.printStackTrace();
-        } catch(ClassNotFoundException e)
-        {
-            e.printStackTrace();
         }
     }
 }
+
+
+//import java.io.*;
+//        import java.net.*;
+//
+//public class BankManager
+//{
+//    public static void main(String[] args)
+//    {
+//        Bank bank = new Bank();
+//        Object inObj;
+//
+//        try
+//        {
+//            ServerSocket server = new ServerSocket(1026);
+//
+//            Socket client = server.accept();
+//
+//            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+//            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+//            out.flush();
+//
+//            while (true)
+//            {
+//                out.flush();
+//                System.out.println("trying to read object");
+//                inObj = in.readObject();
+//                System.out.println("read object");
+//
+//                if (inObj instanceof UserAccount)
+//                {
+//                    UserAccount acct = (UserAccount) inObj;
+//                    System.out.println(acct.getAccountName());
+//                    bank.createNewAccount(acct.getAccountName());
+//
+//                    AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()), bank.getAccount(bank.getBankKey(acct.getAccountName())).getAccountNumber());
+//                    System.out.println(userKey.getKey() + "   " + userKey.getAccountNumber());
+//
+//                    out.writeObject(userKey);
+//
+////          in.close();
+////          out.close();
+////          client.close();
+//                }
+//                else if (inObj instanceof Transaction)
+//                {
+//                    Transaction newTrans = (Transaction) inObj;
+//
+//                    if (newTrans.request == -1) //Place amount in hold
+//                    {
+//                        out.writeObject(bank.getAccount(newTrans.bankKey).setHoldBalance(newTrans.amount));
+//                    } else if (newTrans.request == 1) //Release the funds in hold back to user's account
+//                    {
+//                        out.writeObject(bank.getAccount(newTrans.bankKey).clearHold());
+//                    } else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
+//                    {
+//                        out.writeObject(bank.getAccount(newTrans.bankKey).deductHoldAmount(newTrans.amount));
+//                    }
+//
+////          in.close();
+////          out.close();
+////          client.close();
+//                } else if (inObj instanceof String)
+//                {
+//                    inObj = in.readObject();
+//
+//                    if (inObj instanceof Integer)
+//                    {
+//                        System.out.println("bank key received");
+//                        Integer key = (Integer) inObj;
+//
+//                        out.writeObject(bank.getAccount(key).inquiry());
+//                    }
+//
+////          in.close();
+////          out.close();
+////          client.close();
+//                }
+//            }
+//        }
+//        catch(IOException ee)
+//        {
+//            ee.printStackTrace();
+//        } catch(ClassNotFoundException e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
+//}
+

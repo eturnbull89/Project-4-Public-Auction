@@ -43,12 +43,12 @@ public class AuctionCentral
 
 
         int numOfArgs = 1;
-        if(args.length != numOfArgs){ //check for correct number of arguments
-            System.out.println("incorrect number of arguments");
-            System.exit(-1);
-        }
+//        if(args.length != numOfArgs){ //check for correct number of arguments
+//            System.out.println("incorrect number of arguments");
+//            System.exit(-1);
+//        }
 
-        String HostName = args[0]; //Hostname of Bank Server
+        String HostName = "localhost"; //Hostname of Bank Server
 
         //Establish a connection to the bank based on the hostName and bankPort
         try

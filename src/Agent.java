@@ -51,35 +51,41 @@ public class Agent
 
         //String bankHostName = args[0];  //bank host name will be first argument
         //int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
-//        String bankHostName = "localhost";
-//        int bankPortNumber = 1026;
+        String bankHostName = "localhost";
+        int bankPortNumber = 1031;
 
-        String auctionCentralHostName = "10.82.150.178"; //AC host name will be 2nd arg
+        String auctionCentralHostName = "localhost"; //AC host name will be 2nd arg
         int auctionCenPortNumber = 1027;  //port number for auction central will be fourth
 
         try
         {
-//            Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
             Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctionCenPortNumber);
-
-//            ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
-//            outBank.flush();
-//            ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream());
-
+            System.out.println("trying to write object to bank..4");
             ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
             outAuctionCen.flush();
+            System.out.println("trying to write object to bank..5");
             ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
+            System.out.println("trying to write object to bank..6");
+
+            Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
+            System.out.println("trying to write object to bank..1");
+            ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
+            System.out.println("trying to write object to bank..2");
+            outBank.flush();
+            ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream());
+            System.out.println("trying to write object to bank..3");
 
             //sets up bank account initially
-//            UserAccount myAccount = new UserAccount(agent.agentName);
-//            System.out.println("trying to write object to bank..");
-//            outBank.writeObject(myAccount);
-//            outBank.flush();
-//            agent.bankAccount = (AcctKey) inBank.readObject();
-//
-//            System.out.println("read in acct key");
-//            System.out.println(agent.bankAccount.getAccountNumber());
-//            System.out.println(agent.bankAccount.getKey());
+            UserAccount myAccount = new UserAccount(agent.agentName);
+            System.out.println("trying to write object to bank..");
+            outBank.writeObject(myAccount);
+            outBank.flush();
+            System.out.println("trying to read object from bank..");
+            agent.bankAccount = (AcctKey) inBank.readObject();
+
+            System.out.println("read in acct key");
+            System.out.println(agent.bankAccount.getAccountNumber());
+            System.out.println(agent.bankAccount.getKey());
 
             //outAuctionCen.writeObject(agent.agentName);
             System.out.println("trying to write object to ac...");
@@ -89,16 +95,13 @@ public class Agent
 
             System.out.println("trying to read object from ac...");
             agent.biddingKey = (Integer) inAuctionCen.readObject();
-            //agent.inquireBankBalance(agentBankSocket, inBank, outBank);
+            agent.inquireBankBalance(agentBankSocket, inBank, outBank);
             System.out.println(agent.biddingKey.toString());
             outAuctionCen.writeObject("hey");
             Set<Registration> auctionHouses = (Set<Registration>) inAuctionCen.readObject();
             agent.printListOfAuctionHouses(auctionHouses);
-            while(true)
-            {
 
-            }
-            //agent.pollUserInput(agentBankSocket, inBank, outBank, auctionCentralHostName, auctionCenPortNumber);
+            agent.pollUserInput(agentBankSocket, inBank, outBank, auctionCentralHostName, auctionCenPortNumber);
         }
         catch (UnknownHostException e)
         {
