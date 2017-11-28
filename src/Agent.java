@@ -51,7 +51,7 @@ public class Agent
 
         //String bankHostName = args[0];  //bank host name will be first argument
         //int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
-        String bankHostName = "localhost";
+        String bankHostName = "adam-UX360CA";
         int bankPortNumber = 1031;
 
         String auctionCentralHostName = "localhost"; //AC host name will be 2nd arg
@@ -59,6 +59,7 @@ public class Agent
 
         try
         {
+            //Connect to Auction Central
             Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctionCenPortNumber);
             System.out.println("trying to write object to bank..4");
             ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
@@ -67,34 +68,53 @@ public class Agent
             ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
             System.out.println("trying to write object to bank..6");
 
+            //Connect to the Bank
             Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
-            System.out.println("trying to write object to bank..1");
+            System.out.println("Trying to write object to bank..1");
             ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
-            System.out.println("trying to write object to bank..2");
+            System.out.println("Trying to write object to bank..2");
             outBank.flush();
             ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream());
-            System.out.println("trying to write object to bank..3");
+            System.out.println("Trying to write object to bank..3");
 
-            //sets up bank account initially
+            //sets up first bank account
             UserAccount myAccount = new UserAccount(agent.agentName);
-            System.out.println("trying to write object to bank..");
+            System.out.println("Trying to write object to bank..");
             outBank.writeObject(myAccount);
             outBank.flush();
-            System.out.println("trying to read object from bank..");
+            System.out.println("Trying to read object from bank..");
             agent.bankAccount = (AcctKey) inBank.readObject();
 
-            System.out.println("read in acct key");
-            System.out.println(agent.bankAccount.getAccountNumber());
-            System.out.println(agent.bankAccount.getKey());
+            System.out.println("Read in account number and agent key:");
+            System.out.println("Bankunt number: " + agent.bankAccount.getAccountNumber());
+            System.out.println("Agent Key: " + agent.bankAccount.getKey() + "\n");
+
+            //Test
+
+            //2nd Bank Account
+            UserAccount myAccount2 = new UserAccount("Jim");
+            System.out.println("Trying to write object to bank..");
+            outBank.writeObject(myAccount2);
+            outBank.flush();
+            System.out.println("Trying to read object from bank..");
+            agent.bankAccount = (AcctKey) inBank.readObject();
+
+            System.out.println("Read in account number and agent key:");
+            System.out.println("Bankunt number: " + agent.bankAccount.getAccountNumber());
+            System.out.println("Agent Key: " + agent.bankAccount.getKey());
+
+
+            //Test
 
             //outAuctionCen.writeObject(agent.agentName);
-            System.out.println("trying to write object to ac...");
+            System.out.println("Trying to write object to auction central...");
             Integer tempIntObj = 123;
             outAuctionCen.writeObject(tempIntObj);
             outAuctionCen.flush();
 
-            System.out.println("trying to read object from ac...");
+            System.out.println("Trying to read object from auction central...");
             agent.biddingKey = (Integer) inAuctionCen.readObject();
+            System.out.println("Inquiring on balance: ");
             agent.inquireBankBalance(agentBankSocket, inBank, outBank);
             System.out.println(agent.biddingKey.toString());
             outAuctionCen.writeObject("hey");

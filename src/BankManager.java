@@ -1,31 +1,48 @@
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
+/**
+ * Adam Spanswick
+ * BankManger sets up a server connection for both a agent and the auction central on different ports. To use this class
+ * run main.
+ */
 public class BankManager
 {
+    /**
+     * main: sets up a server connection for a agent and auction central and creates a new BankServerCommuncation object for
+     * each to proccess their requests.
+     * @param args
+     */
     public static void main(String[] args)
     {
         Bank bank = new Bank();
 
         try
         {
-            ServerSocket acServerConnect = new ServerSocket(1026);
-            Socket clientAC = acServerConnect.accept();
+            //Auction Central Connection
+            ServerSocket auctionCentralServerConnect = new ServerSocket(1026); //Auction Central Connection
+            Socket clientAC = auctionCentralServerConnect.accept();
 
-            ObjectOutputStream acOut = new ObjectOutputStream(clientAC.getOutputStream());
-            acOut.flush();
-            ObjectInputStream acIn = new ObjectInputStream(clientAC.getInputStream());
+            ObjectOutputStream auctionCentralOut = new ObjectOutputStream(clientAC.getOutputStream());
+            auctionCentralOut.flush();
+            ObjectInputStream auctionCentralIn = new ObjectInputStream(clientAC.getInputStream());
 
-            ServerSocket agentServerConnect = new ServerSocket(1031);
+            //Agent Connection
+            ServerSocket agentServerConnect = new ServerSocket(1031); //Agent Connection
             Socket clientAgent = agentServerConnect.accept();
 
             ObjectOutputStream agentOut = new ObjectOutputStream(clientAgent.getOutputStream());
             agentOut.flush();
             ObjectInputStream agentIn = new ObjectInputStream(clientAgent.getInputStream());
 
+            //Handle objects from a Agent
             BankServerCommunication readingForAgent = new BankServerCommunication(bank, clientAgent, agentOut, agentIn);
-            BankServerCommunication commWithAuctionCentral = new BankServerCommunication(bank, clientAC, acOut, acIn);
 
+            //Handle objects from Auction Central
+            BankServerCommunication commWithAuctionCentral = new BankServerCommunication(bank, clientAC, auctionCentralOut, auctionCentralIn);
         }
         catch(IOException ee)
         {

@@ -2,7 +2,8 @@ import java.io.Serializable;
 import java.util.Random;
 
 /**
- * BankAccount extends account so it has all of the getters, but also has setters for the account now.
+ * Adam Spanswick
+ * BankAccount extends account so it has all of the getters, but also has setters for bankKey and holdBalance.
  * This version of the account will be used by the Bank.
  */
 public class BankAccount extends Account implements Serializable
@@ -13,85 +14,58 @@ public class BankAccount extends Account implements Serializable
     private int fundsInHold = 0;
     private Integer accountNumber;
 
+    /**
+     * BankAccount: constructor setsup a new account by creating a 9 digit account number and 3 digit bank key.
+     */
     public BankAccount()
     {
         generateAccountNumber();
         generatebankKey();
     }
 
-    public void setAccountNumber(Integer accountNumber)
-    {
-        this.accountNumber = accountNumber;
-    }
-
-    public void setBalance(double balance)
-    {
-        this.balance = balance;
-    }
-
-    public void setBankKey(Integer bankKey)
-    {
-        this.bankKey = bankKey;
-    }
-
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns a Integer object that is the unique bank key
-    //********************************************************************************************************************
+    /**
+     * getBankKey: returns the bankKey
+     * @return
+     */
     public Integer getBankKey()
     {
         return bankKey;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns a Integer object that is the account number.
-    //********************************************************************************************************************
+    /**
+     * getAccountNumber: returns the account number
+     * @return
+     */
     public Integer getAccountNumber()
     {
         return accountNumber;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns a string that is the account holders name
-    //********************************************************************************************************************
-    public String getName()
-    {
-        return name;
-    }
-
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns a int that is the current account balance.
-    //********************************************************************************************************************
+    /**
+     * getBalance: returns the current balance
+     * @return
+     */
     public Double getBalance()
     {
         return balance;
     }
 
-    //********************************************************************************************************************
-    //Parameters:
-    //  1. String update- is either withdraw or deposit
-    //  2. int newBalance- is what will be added or decucted from the account balance
-    //
-    //Method returns void
-    //Method checks if the update string is withdraw or deposit. If it is withdraw it deducts the newBalance from the
-    //current balance. If it is deposit it adds the newBalance to the current balance
-    //********************************************************************************************************************
-    public void updateBalance(String update, int newBalance)
+    /**
+     * updateBalance: updates the balance based off a string passed in. If the string is "withdraw" it deducts the amount
+     * from the account's balance. If the string is "deposit" it adds the amount to the account's balance. Anything else
+     * is not a account function.
+     * @param update how to update the account
+     * @param amount the number to be added or subtracted from the balance
+     */
+    public void updateBalance(String update, int amount)
     {
         if(update.toLowerCase().equals("withdraw"))
         {
-            this.balance -= newBalance;
+            this.balance -= amount;
         }
         else if(update.toLowerCase().equals("deposit"))
         {
-            this.balance += newBalance;
+            this.balance += amount;
         }
         else
         {
@@ -99,13 +73,27 @@ public class BankAccount extends Account implements Serializable
         }
     }
 
-    //********************************************************************************************************************
-    //Parameters:
-    //  1. int amount- the amount of the account balance that will be placed in hold
-    //
-    //Method returns void
-    //Method sets the amount bidded to fundsInHold and updates the current account balance.
-    //********************************************************************************************************************
+    /**
+     * newAccountnumber: Generates a new account number. Used when there is a duplicate account number
+     */
+    public void newAccountNumber()
+    {
+        generateAccountNumber();
+    }
+
+    /**
+     * newBankKey: Generates a new bank key. Used when there is a duplicate bank key
+     */
+    public void newBankKey()
+    {
+        generatebankKey();
+    }
+    /**
+     * setHoldBalance: Takes in a amount and sets the account's fundsInHold to that amount and deducts that amount from
+     * the account's balance.
+     * @param amount
+     * @return
+     */
     public boolean setHoldBalance(int amount)
     {
         if(balance >= amount)
@@ -119,22 +107,21 @@ public class BankAccount extends Account implements Serializable
         return false;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns a int that is the amount in hold.
-    //********************************************************************************************************************
+    /**
+     * getHoldBalance: returns the amount in fundsInHold
+     * @return
+     */
     public int getHoldBalance()
     {
         return fundsInHold;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns void
-    //Method deducts the amount in hold from the account balaance. Represents when a auction is won.
-    //********************************************************************************************************************
+    /**
+     * deductHoldAmount: Checks if the current balance of fundsInHold is greater or equal to the amount passed in. If it is
+     * it deducts the amount from fundsInHold.
+     * @param amount
+     * @return
+     */
     public boolean deductHoldAmount(int amount)
     {
         if(fundsInHold >= amount)
@@ -145,30 +132,24 @@ public class BankAccount extends Account implements Serializable
         return false;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns void
-    //Method adds the funds in hold back into the account balance and resets funds in hold to 0.
-    //
-    //
-    //Change to specific amount
-    //********************************************************************************************************************
-    public boolean clearHold()
+    /**
+     * clearHold: Takes a specific amount and deducts it from the fundsInHold and puts that amount back into the account's
+     * balance by calling updateBalance
+     * @param amount
+     * @return
+     */
+    public boolean clearHold(int amount)
     {
-        updateBalance("deposit", fundsInHold);
-        this.fundsInHold = 0;
+        updateBalance("deposit", amount);
+        this.fundsInHold -= amount;
 
         return true;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns void
-    //Method checks if there are funds in hold, if there are it prints the available balance and the funds in hold. If not
-    //it prints only the available balance.
-    //********************************************************************************************************************
+    /**
+     * inquiry: Prints the available balance and fundsInHold if there are fundsInHold
+     * @return
+     */
     public String inquiry()
     {
         String messgae = "";
@@ -185,12 +166,9 @@ public class BankAccount extends Account implements Serializable
         return messgae;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method sets the bank key to a random 3 digit number
-    //Need to add a check so no duplicated can be generated
-    //********************************************************************************************************************
+    /**
+     * generateBankKey: Creates a random 3 digit number and sets the account's bankKey
+     */
     private void generatebankKey()
     {
         Random rand = new Random();
@@ -199,13 +177,9 @@ public class BankAccount extends Account implements Serializable
         this.bankKey = n;
     }
 
-    //********************************************************************************************************************
-    //Parameters: none
-    //
-    //Method returns void
-    //Method sets the account number to a random 9 digit number.
-    //Need to add a check so there are no duplicate account numbers
-    //********************************************************************************************************************
+    /**
+     * generateAccountNumber: Creates a random 9 digit number and sets this as the account's account number
+     */
     private void generateAccountNumber()
     {
         Random rand = new Random();

@@ -4,7 +4,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
- * Created by tristin on 11/27/2017.
+ * BankServerCommunication is used to differentiate between communication with a agent and with the auction central. It
+ * reads the incoming object and based on their types takes the proper action.
  */
 public class BankServerCommunication implements Runnable
 {
@@ -14,6 +15,14 @@ public class BankServerCommunication implements Runnable
     Socket client;
     Object inObj;
 
+    /**
+     * BankServerCommunication: Constructor sets the object input and output streams and starts a new thread for every
+     * BankServerCommunication object created.
+     * @param bank
+     * @param client
+     * @param out
+     * @param in
+     */
     public BankServerCommunication(Bank bank, Socket client, ObjectOutputStream out, ObjectInputStream in)
     {
         this.out = out;
@@ -24,6 +33,14 @@ public class BankServerCommunication implements Runnable
         bsc.start();
     }
 
+    /**
+     * run: reads incoming objects from the ObjectInputStream. If the object is a UserAccount run creates a new bank account
+     * and passes the bankKey, accountNumber and balance back to the agent. If the object is a Transaction from auction central
+     * run checks a int, which either places a amount in hold on a agent's account, releases the funds back to the agent's
+     * balance (lost a auction) or withdraws the amount from the agents account (won the auction). Finally, if the object is
+     * a string it means a agent is inquiring about their balance and then reads in the next object which should be a integer, bankKey,
+     * then gets the account from the bank and calls the inquire method in BankAccount to get the balance and funds in hold.
+     */
     @Override
     public void run()
     {
@@ -32,9 +49,9 @@ public class BankServerCommunication implements Runnable
             while (true)
             {
                 out.flush();
-                System.out.println("trying to read object");
+                System.out.println("Trying to read incoming object");
                 inObj = in.readObject();
-                System.out.println("read object");
+                System.out.println("Read the object");
 
                 if (inObj instanceof UserAccount)
                 {
@@ -42,14 +59,11 @@ public class BankServerCommunication implements Runnable
                     System.out.println(acct.getAccountName());
                     bank.createNewAccount(acct.getAccountName());
 
-                    AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()), bank.getAccount(bank.getBankKey(acct.getAccountName())).getAccountNumber());
+                    AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()), bank.getAccount(bank.getBankKey(acct.getAccountName())).getAccountNumber(),
+                            bank.getAccount(bank.getBankKey(acct.getAccountName())).getBalance());
                     System.out.println(userKey.getKey() + "   " + userKey.getAccountNumber());
 
                     out.writeObject(userKey);
-
-//          in.close();
-//          out.close();
-//          client.close();
                 }
                 else if (inObj instanceof Transaction)
                 {
@@ -60,15 +74,11 @@ public class BankServerCommunication implements Runnable
                         out.writeObject(bank.getAccount(newTrans.bankKey).setHoldBalance(newTrans.amount));
                     } else if (newTrans.request == 1) //Release the funds in hold back to user's account
                     {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).clearHold());
+                        out.writeObject(bank.getAccount(newTrans.bankKey).clearHold(newTrans.amount));
                     } else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
                     {
                         out.writeObject(bank.getAccount(newTrans.bankKey).deductHoldAmount(newTrans.amount));
                     }
-
-//          in.close();
-//          out.close();
-//          client.close();
                 }
                 else if (inObj instanceof String)
                 {
@@ -76,25 +86,21 @@ public class BankServerCommunication implements Runnable
 
                     if (inObj instanceof Integer)
                     {
-                        System.out.println("bank key received");
+                        System.out.println("Bank key received");
                         Integer key = (Integer) inObj;
 
                         out.writeObject(bank.getAccount(key).inquiry());
                     }
-
-//          in.close();
-//          out.close();
-//          client.close();
                 }
             }
         }
         catch(IOException e)
         {
-
+            System.out.println("IOException");
         }
         catch (ClassNotFoundException e)
         {
-
+            System.out.println("ClassNotFoundException");
         }
     }
 }
