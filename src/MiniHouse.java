@@ -125,7 +125,7 @@ class MiniHouse extends Thread
         if(items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
         {
             //Create a transaction to pass to auction central.
-            Transaction hold = new Transaction(agentKey, bidAmount, -1);
+            AuctionTransaction hold = new AuctionTransaction(agentKey, bidAmount, -1);
 
             try
             {
@@ -147,7 +147,7 @@ class MiniHouse extends Thread
             if(holdConfirm && items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
             {
                 //Transaction that will be used to release the previous agents funds.
-                Transaction release;
+                AuctionTransaction release;
 
                 //Synchronize on the item in the items list to update the necessary fields before another agents thread
                 //can change them as well. This might be a problem later not sure yet.
@@ -166,7 +166,7 @@ class MiniHouse extends Thread
                     items.get(itemIndex).setHighestBidKey(agentKey);
 
                     //Set release to a new transaction.
-                    release = new Transaction(items.get(itemIndex).getPreviousBidderKey(),
+                    release = new AuctionTransaction(items.get(itemIndex).getPreviousBidderKey(),
                                               items.get(itemIndex).getPreviousBid(), 1);
                 }
 
