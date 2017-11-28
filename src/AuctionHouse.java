@@ -175,6 +175,9 @@ public class AuctionHouse
             //Set the centralSocket field to the created socket for use later.
             this.centralSocket = centralSocket;
 
+            //Needed statement
+            outFromHouse.flush();
+
             //Write to auction central the created registration.
             outFromHouse.writeObject(centralReg);
 
