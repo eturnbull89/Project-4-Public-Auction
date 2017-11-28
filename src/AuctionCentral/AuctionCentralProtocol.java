@@ -1,9 +1,6 @@
 package AuctionCentral;
 
-import AuctionCentral.SerializedObjects.Bid;
-import AuctionCentral.SerializedObjects.Confirmation;
-import AuctionCentral.SerializedObjects.Registration;
-import AuctionCentral.SerializedObjects.Transaction;
+import AuctionCentral.SerializedObjects.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,6 +17,7 @@ public class AuctionCentralProtocol
     private final int WITHDRAW = 0;//The transaction completed and the money needs to be withdrawn
     private final int RELEASE = 1;//Release money hold
 
+    //object handles sending transactions to the bank and recieving data from bank
     private TalkToBank bankConnection;
 
     private Random keyGenerator = new Random(1000);
@@ -64,39 +62,22 @@ public class AuctionCentralProtocol
                 {
                     out.flush();
                     fromHouse = in.readObject();
-                    if (fromHouse instanceof Bid)
+                    if (fromHouse instanceof AuctionTransaction)
                     {
 
-                        Bid ClientBid = (Bid) fromHouse;
-                        //TODO: make Grabbing the key Atomic
+                        AuctionTransaction ClientBid = (AuctionTransaction) fromHouse;
 
+                        //TODO: make Grabbing the key Atomic
                         //get Bank key for transaction
-                        Integer key = BidKeyToBankKey.get(ClientBid.getAgentBidKey());
+                        Integer key = BidKeyToBankKey.get(ClientBid.bidKey);
 
                         //create transaction
-                        Transaction trans = new Transaction(key, ClientBid.getBidAmount(), ClientBid.getRequest());
+                        Transaction trans = new Transaction(key, ClientBid.amount, ClientBid.request);
 
                         //send transaction to bank and
                         //wait for bankServer response on the success of the transaction
                         boolean result = bankConnection.RequestFromBank(trans);
 
-                        //if response from bank true release old hold
-                        if (result && ClientBid.getOldAgentBidKey() != null)
-                        {
-                            //create Transaction
-                            //TODO: make Grabbing the key Atomic
-                            Integer oldKey = BidKeyToBankKey.get(ClientBid.getOldAgentBidKey());
-                            int amountToRelease = ClientBid.getOldAgentBidAmount();
-                            Transaction releaseHold = new Transaction(oldKey, amountToRelease, RELEASE);
-
-
-                            /*Right now nothing checks for the bank to return any status on releasing
-                            a hold. I don't believe the situation should occur where the bank can not
-                            release a hold. Maybe if the account does not have the given amount on hold
-                            but i'm not sure why this would happen*/
-                            //send Transaction to bank
-                            bankConnection.RequestFromBank(releaseHold);
-                        }
                         out.writeObject(result);
                     } else
                     {
@@ -106,8 +87,9 @@ public class AuctionCentralProtocol
             }
         } catch (IOException | ClassNotFoundException e)
         {
-            e.printStackTrace();
-            System.exit(-1);
+            System.out.println("lost connection to house");
+            //in.close();
+            //out.close();
         }
     }
 
@@ -146,9 +128,9 @@ public class AuctionCentralProtocol
                 }
             }
         }catch(IOException|ClassNotFoundException e){
-            e.printStackTrace();
-            System.exit(-1);
+            System.out.println("lost connection to agent");
+            //in.close();
+           // out.close();
         }
-
     }
 }

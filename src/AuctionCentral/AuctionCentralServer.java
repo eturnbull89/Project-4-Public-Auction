@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+/**Zach Fleharty
+ * Sets up AuctionCentralServer and waits to listen to multiple clients*/
 public class AuctionCentralServer
 {
     //I'm not sure if this will come in useful but it may be useful to keep
@@ -26,15 +28,17 @@ public class AuctionCentralServer
             System.exit(-1);
         }
 
+        //Use arguments to connect to bank and set up port
         String bankHost = args[0];
         int bankPort = Integer.parseInt(args[1]);
         int serverPort = Integer.parseInt(args[2]);
 
-        AuctionCentralProtocol ACP;
+        AuctionCentralProtocol ACP; //Protocol which communicates with clients
+
         //establish connection with bank
         try
         {
-            System.out.println("connection to bank...");
+            System.out.println("connecting to bank...");
             Socket BankSocket = new Socket(bankHost, bankPort);
             TalkToBank BankConnection = new TalkToBank(BankSocket);
             System.out.println("connected to bank!");
@@ -63,19 +67,19 @@ public class AuctionCentralServer
                 Object fromClient = in.readObject();
                 if(fromClient instanceof Registration){
                     //Create a new thread to communicate with this house
-
+                    System.out.println("Got registration");
                     Runnable talkToHouse = () -> ACP.CommunicateWithHouse(((Registration)fromClient),in,out);
                     Thread newThread = new Thread(talkToHouse); //initiate new thread
 
                     runningThreads.add(newThread); //add newThread to the list of running threads
-
+                    newThread.start();
                 }else if(fromClient instanceof Integer){
                     //create a new thread to communicate with this Agent
-
                     Runnable talkToAgent = () -> ACP.CommunicateWithAgent(((Integer)fromClient),in,out);
                     Thread newThread = new Thread(talkToAgent);
 
                     runningThreads.add(newThread); //add newThread to the list of running threads
+                    newThread.start();
                 }
 
             }

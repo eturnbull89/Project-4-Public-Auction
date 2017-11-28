@@ -86,7 +86,7 @@ public class Agent
             agent.bankAccount = (AcctKey) inBank.readObject();
 
             System.out.println("Read in account number and agent key:");
-            System.out.println("Bankunt number: " + agent.bankAccount.getAccountNumber());
+            System.out.println("Bank number: " + agent.bankAccount.getAccountNumber());
             System.out.println("Agent Key: " + agent.bankAccount.getKey() + "\n");
 
             //Test
