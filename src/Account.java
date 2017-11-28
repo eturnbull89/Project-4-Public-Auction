@@ -2,7 +2,7 @@ import java.io.Serializable;
 import java.util.Hashtable;
 
 /**
- * Account is abstract so Agents don't have any access to setters,
+ * Bankunt is abstract so Agents don't have any access to setters,
  * only getters for the account
  */
 public abstract class Account implements Serializable
@@ -14,7 +14,7 @@ public abstract class Account implements Serializable
 
     //ideally, it would be nice if the account had access to the bank, not sure how to make happen though
     //without servers passing references
-//    public Account(Bank bank)
+//    public Bankunt(Bank bank)
 //    {
 //        this.bank = bank;
 //    }

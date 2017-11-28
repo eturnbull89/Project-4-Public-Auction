@@ -1,108 +1,127 @@
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
-//********************************************************************************************************************
-//Adam Spanswick
-//
-//The Bank class sets up and keeps a record of all accounts that have been created by users. To use this class call the
-//constructor with the name of the account holder and Bank will create a new unique account.
-//********************************************************************************************************************
+/**
+ * Adam Spanswick
+ * The Bank class sets up and keeps a record of all accounts that have been created by users. To use this class call the
+ * constructor with the name of the account holder and Bank will create a new unique account.
+ */
 public class Bank implements Serializable
 {
 
-  //********************************************************************************************************************
-//Adam Spanswick
-//
-//The Bank class sets up and keeps a record of all accounts that have been created by users. To use this class call the
-//constructor with the name of the account holder and Bank will create a new unique account.
-//********************************************************************************************************************
   private HashMap<Integer, BankAccount> accountList = new HashMap<>();
   private HashMap<String, Integer> bankKeys = new HashMap<>();
-  private ArrayList<Account> printList = new ArrayList<>();
+  private ArrayList<Integer> keys = new ArrayList<>();
+  private ArrayList<Integer> accountNumbers = new ArrayList<>();
 
+  /**
+   * createNewAccount: setups up a new account for a agent by calling newAccount with the name provided.
+   * @param name is the name of the account holder
+   */
   public void createNewAccount(String name)
   {
     newAccount(name);
   }
 
-  //********************************************************************************************************************
-  //Parameters:
-  //  1. Integer key is the users key for their acount
-  //
-  //Method returns the Account that corresponds to the key given
-  //********************************************************************************************************************
+  /**
+   * getAccount: returns the agents account.
+   * @param key is the agents ket to lookup their account
+   * @return the account associated with the given key
+   */
   public BankAccount getAccount(Integer key)
   {
     return accountList.get(key);
   }
 
-  //********************************************************************************************************************
-  //Parameters:
-  //  1. int amouunt is the amount that will be deducted or put on hold
-  //  2. Integer key looks up the account for the amount to be applied to
-  //
-  //Method retrieves the correct account and puts the amount passed in "on hold" in the user account then checks if the
-  //request is for winning a auction, if it is it deducts the amount from the account balance. If it is not a auction won
-  //then it clears the amount from hte funds in hold.
-  //********************************************************************************************************************
-  public void processRequest(int amount, Integer key)
-  {
-    BankAccount temp = accountList.get(key);
-
-    temp.setHoldBalance(amount);
-
-    if (wonAuction())
-    {
-      //Transfer fundsinHold to auction house
-      temp.deductHoldAmount(amount);
-    } else
-    {
-      temp.clearHold();
-    }
-  }
-
-  //********************************************************************************************************************
-  //Parameters: none
-  //
-  //Method returns true if a auction is won flase if not.
-  //********************************************************************************************************************
-  public boolean wonAuction()
-  {
-    return true;
-  }
-
-  //********************************************************************************************************************
-  //Parameters: none
-  //
-  //Method prints the name and account numbers of all the accounts in the bank
-  //********************************************************************************************************************
-//  public void printAcctList()
-//  {
-//    for (Account acct : printList)
-//    {
-//      System.out.println("Name: " + acct.getName() + ", Account Number: " + acct.getAccountNumber());
-//    }
-//  }
-
+  /**
+   * getBankKey: returns the bank key from the agents name
+   * @param name the agents name
+   * @return the bank key
+   */
   public Integer getBankKey(String name)
   {
     return bankKeys.get(name);
   }
 
-  //********************************************************************************************************************
-  //Parameters:
-  //  1. String name is the name of the account holder
-  //
-  //Method creates a new account and adds it to the list of accounts
-  //********************************************************************************************************************
+  /**
+   * newAccount: creates a new account for a agent by creating a new BankAccount object which generates a bank key and
+   * account number. The new account is then added to the Bank's account list and the bank key is put into a map with the
+   * agents name.
+   * @param name
+   */
   private void newAccount(String name)
   {
     BankAccount newAcct = new BankAccount();
 
     accountList.put(newAcct.getBankKey(), newAcct);
     bankKeys.put(name, newAcct.getBankKey());
+    keys.add(newAcct.getBankKey());
+    accountNumbers.add(newAcct.getAccountNumber());
+
+    //Check for duplicates
+    checkForDuplicateAccountnumbers(newAcct);
+    checkForDuplicateBankKeys(newAcct);
+  }
+
+  /**
+   * checkForDuplicateAccountnumbers: Checks for duplicate account numbers every time a new account is created. Creates a
+   * set that will hold duplicate account numbers if there are any and adds all the account numbers to that set. Then it checks
+   * if the size of the set is is less than all the account numbers there is a duplicate and calls a method to generate a new
+   * account number.
+   */
+  private void checkForDuplicateAccountnumbers(BankAccount accountTocheck)
+  {
+    Set<Integer> duplicates = new HashSet<>();
+    duplicates.addAll(accountNumbers);
+
+    if(duplicates.size() < accountNumbers.size())
+    {
+      handleDuplicateAccountNumbers(accountTocheck, duplicates);
+    }
+  }
+
+  /**
+   * handleDuplicateAccountNumbers: Creates a new account number for the account with a duplicate account number. Then
+   * checks again
+   * @param duplicates
+   */
+  private void handleDuplicateAccountNumbers(BankAccount accountToCheck, Set duplicates)
+  {
+    //Change account number
+    accountToCheck.newAccountNumber();
+
+    //Recheck
+    checkForDuplicateAccountnumbers(accountToCheck);
+  }
+
+  /**
+   * checkForDuplicateBankKeys: Checks for duplicate bank keys every time a new account is created. Creates a
+   * set that will hold duplicate bank keys if there are any and adds all the bank keys to that set. Then it checks
+   * if the size of the set is is less than all the bank keys there is a duplicate and calls a method to generate a new
+   * bank key.
+   */
+  private void checkForDuplicateBankKeys(BankAccount accountTocheck)
+  {
+    Set<Integer> duplicates = new HashSet<>();
+    duplicates.addAll(keys);
+
+    if(duplicates.size() < keys.size())
+    {
+      handleDuplicateBankKeys(accountTocheck, duplicates);
+    }
+  }
+
+  /**
+   * handleDuplicateBankKeys: Creates a new bank key for the account with a duplicate bank key. Then checks again.
+   * @param duplicates
+   */
+  private void handleDuplicateBankKeys(BankAccount accountToCheck, Set duplicates)
+  {
+    //Change bank key
+    accountToCheck.newBankKey();
+
+    //Recheck
+    checkForDuplicateBankKeys(accountToCheck);
+
   }
 }
-
-

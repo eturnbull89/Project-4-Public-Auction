@@ -7,6 +7,7 @@ public class AcctKey implements Serializable
 {
   private Integer acctKey;
   private Integer acctNum;
+  private Double balance;
 
   //********************************************************************************************************************
   //Parameters:
@@ -14,10 +15,11 @@ public class AcctKey implements Serializable
   //
   //Constructor sets the acctKey to Key
   //********************************************************************************************************************
-  public AcctKey(Integer key, Integer accountNumber)
+  public AcctKey(Integer key, Integer accountNumber, Double balance)
   {
     this.acctNum = accountNumber;
     this.acctKey = key;
+    this.balance = balance;
   }
 
   //********************************************************************************************************************
@@ -36,4 +38,11 @@ public class AcctKey implements Serializable
   //Method returns the acctNum
   //********************************************************************************************************************
   public Integer getAccountNumber() { return acctNum; }
+
+  //********************************************************************************************************************
+  //Parameters: none
+  //
+  //Method returns the balance
+  //********************************************************************************************************************
+  public Double getBalance() { return balance; }
 }
