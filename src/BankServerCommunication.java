@@ -27,6 +27,18 @@ public class BankServerCommunication implements Runnable
     {
         this.out = out;
         this.in = in;
+        if(out == null && in == null)   //an ugly indicator that this is an agent thread
+        {
+            try
+            {
+                this.out = new ObjectOutputStream(client.getOutputStream());    //create new streams for each agent thread, without this
+                this.in = new ObjectInputStream(client.getInputStream());       //agents will get stuck when the bank servers input stream is already in use
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
         this.client = client;
         this.bank = bank;
         Thread bsc = new Thread(this);

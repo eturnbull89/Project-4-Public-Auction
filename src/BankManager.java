@@ -30,19 +30,32 @@ public class BankManager
             auctionCentralOut.flush();
             ObjectInputStream auctionCentralIn = new ObjectInputStream(clientAC.getInputStream());
 
-            //Agent Connection
-            ServerSocket agentServerConnect = new ServerSocket(1031); //Agent Connection
-            Socket clientAgent = agentServerConnect.accept();
-
-            ObjectOutputStream agentOut = new ObjectOutputStream(clientAgent.getOutputStream());
-            agentOut.flush();
-            ObjectInputStream agentIn = new ObjectInputStream(clientAgent.getInputStream());
-
-            //Handle objects from a Agent
-            BankServerCommunication readingForAgent = new BankServerCommunication(bank, clientAgent, agentOut, agentIn);
-
             //Handle objects from Auction Central
             BankServerCommunication commWithAuctionCentral = new BankServerCommunication(bank, clientAC, auctionCentralOut, auctionCentralIn);
+
+            //Agent Connection
+            //ServerSocket agentServerConnect = new ServerSocket(1031); //Agent Connection
+            //Socket clientAgent = agentServerConnect.accept();
+            ServerSocket agentServerConnect = null;             //objects set initially to null
+            Socket clientAgent = null;
+
+            try { agentServerConnect = new ServerSocket(1031); }    //try to setup server socket on port
+            catch (IOException e){ e.printStackTrace(); }
+
+            while(true)
+            {
+                try { clientAgent = agentServerConnect.accept(); }  //if there are new agent requests, we will create a new agent comm. thread
+                catch(IOException e) { e.printStackTrace(); }
+                //new thread for agent client
+                BankServerCommunication readingForAgent = new BankServerCommunication(bank, clientAgent, null, null);
+            }
+
+//            ObjectOutputStream agentOut = new ObjectOutputStream(clientAgent.getOutputStream());
+//            agentOut.flush();
+//            ObjectInputStream agentIn = new ObjectInputStream(clientAgent.getInputStream());
+
+            //Handle objects from a Agent
+//
         }
         catch(IOException ee)
         {

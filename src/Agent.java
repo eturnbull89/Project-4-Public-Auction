@@ -51,7 +51,7 @@ public class Agent
 
         //String bankHostName = args[0];  //bank host name will be first argument
         //int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
-        String bankHostName = "adam-UX360CA";
+        String bankHostName = "localhost";
         int bankPortNumber = 1031;
 
         String auctionCentralHostName = "localhost"; //AC host name will be 2nd arg
@@ -92,17 +92,19 @@ public class Agent
             //Test
 
             //2nd Bank Account
-            UserAccount myAccount2 = new UserAccount("Jim");
-            System.out.println("Trying to write object to bank..");
-            outBank.writeObject(myAccount2);
-            outBank.flush();
-            System.out.println("Trying to read object from bank..");
-            agent.bankAccount = (AcctKey) inBank.readObject();
+//            UserAccount myAccount2 = new UserAccount("Jim");
+//            System.out.println("Trying to write object to bank..");
+//            outBank.writeObject(myAccount2);
+//            outBank.flush();
+//            System.out.println("Trying to read object from bank..");
+//            agent.bankAccount = (AcctKey) inBank.readObject();
+//
+//            System.out.println("Read in account number and agent key:");
+//            System.out.println("Bankunt number: " + agent.bankAccount.getAccountNumber());
+//            System.out.println("Agent Key: " + agent.bankAccount.getKey());
 
-            System.out.println("Read in account number and agent key:");
-            System.out.println("Bankunt number: " + agent.bankAccount.getAccountNumber());
-            System.out.println("Agent Key: " + agent.bankAccount.getKey());
-
+            System.out.println("Inquiring on balance: ");
+            agent.inquireBankBalance(agentBankSocket, inBank, outBank);
 
             //Test
 
@@ -114,13 +116,11 @@ public class Agent
 
             System.out.println("Trying to read object from auction central...");
             agent.biddingKey = (Integer) inAuctionCen.readObject();
-            System.out.println("Inquiring on balance: ");
-            agent.inquireBankBalance(agentBankSocket, inBank, outBank);
             System.out.println(agent.biddingKey.toString());
-            outAuctionCen.writeObject("hey");
-            Set<Registration> auctionHouses = (Set<Registration>) inAuctionCen.readObject();
-            agent.printListOfAuctionHouses(auctionHouses);
+            //outAuctionCen.writeObject("hey");
+            //Set<Registration> auctionHouses = (Set<Registration>) inAuctionCen.readObject();
 
+            //agent.printListOfAuctionHouses(auctionHouses);
             agent.pollUserInput(agentBankSocket, inBank, outBank, auctionCentralHostName, auctionCenPortNumber);
         }
         catch (UnknownHostException e)
