@@ -60,14 +60,14 @@ public class AuctionHouse
         house.centralHost = args[4];
 
         //set up testing
-        house.testingMethod();
+        //house.testingMethod();
 
         //Register with auction central and set houseReg field
-        //house.register(house.houseHost, house.housePort, house.centralHost, house.centralPort);
+        house.register(house.houseHost, house.housePort, house.centralHost, house.centralPort);
 
         //Commented out until it can be tested.
         //Create a server socket for this auction house.
-        /*ServerSocket serverSocket;
+        ServerSocket serverSocket;
 
         //Boolean to keep the creating sockets for each agent that connects.
         boolean listeningSocket = true;
@@ -94,9 +94,7 @@ public class AuctionHouse
         catch (IOException e)
         {
             System.err.println("could not listen on port: "+ house.housePort);
-        }*/
-
-
+        }
     }
 
     //Method used to test out some of the auction house methods and confirm if they work.
