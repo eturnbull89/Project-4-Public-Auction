@@ -10,6 +10,9 @@ import java.util.ArrayList;
  * Sets up AuctionCentralServer and waits to listen to multiple clients*/
 public class AuctionCentralServer
 {
+
+    static Boolean DEBUG = true; //When true debug mode is on
+
     //I'm not sure if this will come in useful but it may be useful to keep
     //a reference to all executing threads on hand
     private static ArrayList<Thread> runningThreads = new ArrayList<>();
@@ -35,10 +38,12 @@ public class AuctionCentralServer
         //establish connection with bank
         try
         {
-            System.out.println("connecting to bank...");
+            debug("connecting to bank...");
+
             Socket BankSocket = new Socket(bankHost, bankPort);
             TalkToBank BankConnection = new TalkToBank(BankSocket);
-            System.out.println("connected to bank!");
+
+            debug("connected to bank!");
 
             ACP = new AuctionCentralProtocol(BankConnection);
 
@@ -53,6 +58,10 @@ public class AuctionCentralServer
                 //Creates new Socket with a new connected client
                 Socket clientSocket = ACServer.accept();
 
+
+                debug("New Client Recieved");
+
+
                 //Set up communication channels with the new Socket
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
@@ -62,8 +71,9 @@ public class AuctionCentralServer
                 Object fromClient = in.readObject();
                 if(fromClient instanceof Registration)
                 {
+                    debug("Registration received");
+
                     //Create a new thread to communicate with this house
-                    System.out.println("Got registration");
                     Runnable talkToHouse = () -> ACP.CommunicateWithHouse(((Registration)fromClient),in,out);
                     Thread newThread = new Thread(talkToHouse); //initiate new thread
 
@@ -73,8 +83,10 @@ public class AuctionCentralServer
                 }
                 else if(fromClient instanceof Integer)
                 {
+                    debug("Bank key received");
+
                     //create a new thread to communicate with this Agent
-                    Runnable talkToAgent = () -> ACP.CommunicateWithAgent(((Integer)fromClient), clientSocket, in, out);
+                    Runnable talkToAgent = () -> ACP.CommunicateWithAgent(((Integer)fromClient), in, out);
                     Thread newThread = new Thread(talkToAgent);
 
                     runningThreads.add(newThread); //add newThread to the list of running threads
@@ -87,4 +99,7 @@ public class AuctionCentralServer
         }
     }
 
+    public static void debug(String str){
+        if(DEBUG) System.out.println(str);
+    }
 }
