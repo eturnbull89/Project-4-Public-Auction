@@ -116,12 +116,9 @@ public class Agent
 
             System.out.println("Trying to read object from auction central...");
             agent.biddingKey = (Integer) inAuctionCen.readObject();
-            System.out.println(agent.biddingKey.toString());
-            //outAuctionCen.writeObject("hey");
-            //Set<Registration> auctionHouses = (Set<Registration>) inAuctionCen.readObject();
+            System.out.println("Bidding key: " + agent.biddingKey.toString());
 
-            //agent.printListOfAuctionHouses(auctionHouses);
-            agent.pollUserInput(agentBankSocket, inBank, outBank, auctionCentralHostName, auctionCenPortNumber);
+            agent.pollUserInput(agentBankSocket, inBank, outBank, outAuctionCen, inAuctionCen);
         }
         catch (UnknownHostException e)
         {
@@ -142,11 +139,11 @@ public class Agent
      * @param bankSocket from main when we create our bank socket
      * @param bankIn bank input stream
      * @param bankOut bank output stream
-     * @param acHostName auction central host name
-     * @param auctionCenPortNumber auction central port number given from user on start up
+     * @param out auction central host name
+     * @param in auction central port number given from user on start up
      */
-    private void pollUserInput(Socket bankSocket, ObjectInputStream bankIn, ObjectOutputStream bankOut, String acHostName,
-                               int auctionCenPortNumber) throws UnknownObjectException, IOException, ClassNotFoundException
+    private void pollUserInput(Socket bankSocket, ObjectInputStream bankIn, ObjectOutputStream bankOut,
+                               ObjectOutputStream out, ObjectInputStream in) throws UnknownObjectException, IOException, ClassNotFoundException
     {
         Scanner sc = new Scanner(System.in);
         String input = "";
@@ -159,7 +156,7 @@ public class Agent
             input = sc.next();
             if(input.equals("1"))
             {
-                askAcForAh(acHostName, auctionCenPortNumber);
+                askAcForAh(out, in);
             }
             else if(input.equals("$"))
             {
@@ -177,30 +174,25 @@ public class Agent
      * askAcForAh (ask auction central for auction houses): this method will communicate with the auction central over a
      * socket to get the list of auction houses. once the auction central returns the list of auction houses, we will
      * ask the agent which house they are wanting to join, we will then join that house to start bidding on items.
-     * @param acHostName auction central host name
-     * @param acPortNumber auction central port number
+     * @param out auction central host name
+     * @param in auction central port number
      */
-    private void askAcForAh(String acHostName, int acPortNumber) throws UnknownObjectException, IOException
+    private void askAcForAh(ObjectOutputStream out, ObjectInputStream in) throws UnknownObjectException, IOException
     {
         try
-        (
-            Socket agentAuctionCentralSocket = new Socket(acHostName, acPortNumber);
-            ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
-            ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
-        )
         {
             String requestForAuctionHouses = "AuctionHouses";
-            outAuctionCen.writeObject(requestForAuctionHouses);
-            outAuctionCen.flush();
+            out.writeObject(requestForAuctionHouses);
+            out.flush();
 
-            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();
-            //printListOfAuctionHouses(listOfAuctionHouses);
+            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)in.readObject();
+            printListOfAuctionHouses(listOfAuctionHouses);
 
             System.out.println("Which auction house would you like to join?");
             Scanner sc = new Scanner(System.in);
             int auctionHouseNum = sc.nextInt();
 
-            joinAuctionHouse(listOfAuctionHouses, auctionHouseNum, acHostName);
+            joinAuctionHouse(listOfAuctionHouses, auctionHouseNum);
 
         } catch (ClassNotFoundException e)
         {
@@ -216,11 +208,10 @@ public class Agent
      * own method later, and be in a while loop to go until the itemBiddingOn timer runs out.
      * @param listOfAuctionHouses
      * @param auctionHouseNum
-     * @param hostname
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    private void joinAuctionHouse(ArrayList<Registration> listOfAuctionHouses, int auctionHouseNum, String hostname)
+    private void joinAuctionHouse(ArrayList<Registration> listOfAuctionHouses, int auctionHouseNum)
             throws IOException, ClassNotFoundException
     {
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum);
@@ -266,6 +257,7 @@ public class Agent
 
     private void printListOfAuctionItems(ArrayList<AuctionItem> auctionItems)
     {
+        System.out.println("Printing list of auction items");
         int counter = 0;
         for(AuctionItem ai : auctionItems)
         {
@@ -274,11 +266,13 @@ public class Agent
         }
     }
 
-    private void printListOfAuctionHouses(Set<Registration> auctionHouses)
+    private void printListOfAuctionHouses(ArrayList<Registration> auctionHouses)
     {
+        System.out.println("Printing list of auction houses");
         int counter = 0;
         for(Registration ah : auctionHouses)
         {
+            System.out.println("printing auction houses!");
             counter++;
             System.out.println(counter + ". " + ah.getHouseName());
         }
