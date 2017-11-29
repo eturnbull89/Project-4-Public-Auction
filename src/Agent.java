@@ -247,8 +247,9 @@ public class Agent
 
             while (!agentBidOnItem.getBidStatus().equals("Over"))
             {
-                itemBiddingOn = getUpdatedItem(itemNumber); //get the new list of items after every bid
-                int highestBid = itemBiddingOn.getCurrentBid();
+                //itemBiddingOn = getUpdatedItem(itemNumber); //get the new list of items after every bid
+                //int highestBid = itemBiddingOn.getCurrentBid();
+                int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
 
                 inquireBankBalance();
                 System.out.println("Current highest bid on " + itemBiddingOn.getName() + " : " + highestBid);
@@ -317,8 +318,6 @@ public class Agent
             outCurrentAuctionHouse.flush();
 
             ArrayList<AuctionItem> listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
-            System.out.println("List of auction items right after reading in");
-            printListOfAuctionItems(listOfAuctionItems);
             return listOfAuctionItems;
         }
         catch(IOException e)
