@@ -12,6 +12,10 @@ class MiniHouse extends Thread
     //Socket used to communicate with auction central.
     private Socket centralSocket = null;
 
+    private ObjectInputStream centralIn;
+
+    private ObjectOutputStream centralOut;
+
     //List of items for sale by this auction house.
     private ArrayList<AuctionItem> items = null;
 
@@ -19,7 +23,8 @@ class MiniHouse extends Thread
     private final Integer houseKey;
 
     //Constructor for a mini auction house.
-    MiniHouse(Socket agent, Socket central, ArrayList<AuctionItem> items, Integer houseKey)
+    MiniHouse(Socket agent, Socket central, ArrayList<AuctionItem> items, Integer houseKey, ObjectOutputStream out,
+              ObjectInputStream in)
     {
         //set the agent socket variable.
         this.agentSocket = agent;
@@ -32,6 +37,10 @@ class MiniHouse extends Thread
 
         //Set the houseKey variable to the auction house key.
         this.houseKey = houseKey;
+
+        this.centralIn = in;
+
+        this.centralOut = out;
     }
 
     public void run()
@@ -44,17 +53,11 @@ class MiniHouse extends Thread
             //Needed flush on output stream
             outFromHouse.flush();
 
-            //Create an object output stream to auction central.
-            ObjectOutputStream toCentral = new ObjectOutputStream(centralSocket.getOutputStream());
-
             //Needed flush on output stream
-            toCentral.flush();
+            centralOut.flush();
 
             //Create an object input stream from an agent.
             ObjectInputStream inFromAgent = new ObjectInputStream(agentSocket.getInputStream());
-
-            //Create an object input stream from auction central.
-            ObjectInputStream fromCentral = new ObjectInputStream(centralSocket.getInputStream());
 
             //Boolean to keep listening for a clients input until they exit.
             boolean listening = true;
@@ -68,7 +71,9 @@ class MiniHouse extends Thread
                 if(passed instanceof Bid)
                 {
                     //Create a bid to pass back to the agent.
-                    Bid passedBid = bidProtocol(fromCentral, toCentral, (Bid) passed);
+                    Bid passedBid = bidProtocol(centralIn, centralOut, (Bid) passed);
+
+                    System.out.println();
 
                     //Write the created bid back to the agent.
                     outFromHouse.writeObject(passedBid);
@@ -80,7 +85,9 @@ class MiniHouse extends Thread
                 else if(passed instanceof String)
                 {
                     //Store the message in a string and set its font to lower case.
-                    String message = inFromAgent.readObject().toString().toLowerCase();
+                    String message = ((String) passed).toLowerCase();
+
+                    System.out.println(message);
 
                     //If the string is equal to exit, set the listening variable to false.
                     if(message.equals("exit"))
@@ -101,7 +108,6 @@ class MiniHouse extends Thread
                     }
 
                 }
-
             }
         }
         catch (IOException | ClassNotFoundException e)
@@ -140,6 +146,8 @@ class MiniHouse extends Thread
 
                 //Get centrals confirmation of hold.
                 holdConfirm = (Boolean) fromCentral.readObject();
+
+                System.out.println("getting to line 156");
 
             }
             catch (IOException | ClassNotFoundException e)
