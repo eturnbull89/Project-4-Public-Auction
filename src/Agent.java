@@ -135,6 +135,7 @@ public class Agent
         String input = "";
         while(!input.equals("Exit"))
         {
+            System.out.println("\n Main Menu\\ \n");
             System.out.println("Please enter the key corresponding to what you want to do\n" +
                     "(1) see list of auction houses \n" +
                     "($) see current account balance\n" +
@@ -174,6 +175,7 @@ public class Agent
             {
                 while (!listOfAuctionHouses.isEmpty())
                 {
+                    System.out.println("\n Main Menu\\AuctionCentral \n");
                     listOfAuctionHouses = requestListOfAuctionHouses(outAuctionCen, inAuctionCen);
                     printListOfAuctionHouses(listOfAuctionHouses);
 
@@ -215,6 +217,7 @@ public class Agent
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
         try
         {
+            System.out.println("\n Main Menu\\AuctionCentral\\" + auctionHouse.getHouseName() + "\n");
             setCurrentAuctionHouseStreams(auctionHouse);
 
             ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
@@ -225,6 +228,10 @@ public class Agent
             Scanner sc = new Scanner(System.in);
             int itemNumber = sc.nextInt();
             AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
+            
+            System.out.println("\n Main Menu\\AuctionCentral\\"  + auctionHouse.getHouseName()
+                    + "\\" + itemBiddingOn.getName() + "\n");
+
             System.out.println(itemBiddingOn.getCurrentBid());
 
             System.out.println("How much would you like to bid?");
@@ -265,6 +272,16 @@ public class Agent
         }
     }
 
+    private void inquireBankBalance()
+            throws IOException, ClassNotFoundException
+    {
+        outBank.writeObject("Inquire");
+        outBank.writeObject(bankAccount.getKey());
+
+        String balance = (String) inBank.readObject();
+        System.out.println(balance + "\n");
+    }
+
     public void setCurrentAuctionHouseStreams(Registration auctionHouse)
     {
         try
@@ -299,16 +316,6 @@ public class Agent
             e.printStackTrace();
         }
         return null;
-    }
-
-    private void inquireBankBalance()
-            throws IOException, ClassNotFoundException
-    {
-        outBank.writeObject("Inquire");
-        outBank.writeObject(bankAccount.getKey());
-
-        String balance = (String) inBank.readObject();
-        System.out.println(balance + "\n");
     }
 
     private ArrayList<Registration> requestListOfAuctionHouses(ObjectOutputStream out, ObjectInputStream in)
@@ -355,6 +362,4 @@ public class Agent
             System.out.println(counter + ". " + ah.getHouseName());
         }
     }
-
-
 }
