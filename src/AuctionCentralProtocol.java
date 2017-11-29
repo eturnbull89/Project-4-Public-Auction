@@ -132,11 +132,11 @@ public class AuctionCentralProtocol
         try
         {
             out.writeObject(bidKey);
-            //Object fromAgent;
+            Object fromAgent;
             out.flush();
 
 
-            /*while (true)
+            while (true)
             {
 
                 System.out.println("waiting for agent communication");
@@ -155,11 +155,15 @@ public class AuctionCentralProtocol
                     out.writeObject(keySet);
                     out.flush();
                 }
-            }*/
+            }
         }catch(IOException e){
             System.out.println("lost connection to agent");
             //in.close();
            // out.close();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
         }
     }
 }

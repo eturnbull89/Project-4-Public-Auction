@@ -58,11 +58,10 @@ public class AuctionCentralServer
                 ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
                 out.flush();
 
-
-
                 //Client sends first object either Registration(House) or BankKey(agent)
                 Object fromClient = in.readObject();
-                if(fromClient instanceof Registration){
+                if(fromClient instanceof Registration)
+                {
                     //Create a new thread to communicate with this house
                     System.out.println("Got registration");
                     Runnable talkToHouse = () -> ACP.CommunicateWithHouse(((Registration)fromClient),in,out);
@@ -71,7 +70,9 @@ public class AuctionCentralServer
                     runningThreads.add(newThread); //add newThread to the list of running threads
                     newThread.start();
 
-                }else if(fromClient instanceof Integer){
+                }
+                else if(fromClient instanceof Integer)
+                {
                     //create a new thread to communicate with this Agent
                     Runnable talkToAgent = () -> ACP.CommunicateWithAgent(((Integer)fromClient), clientSocket, in, out);
                     Thread newThread = new Thread(talkToAgent);

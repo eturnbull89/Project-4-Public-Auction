@@ -134,7 +134,7 @@ public class Agent
         String input = "";
         while(!input.equals("Exit"))
         {
-            System.out.println("\n Main Menu\\ \n");
+            System.out.println("\n \\Main Menu");
             System.out.println("Please enter the key corresponding to what you want to do\n" +
                     "(1) see list of auction houses \n" +
                     "($) see current account balance\n" +
@@ -172,7 +172,7 @@ public class Agent
             {
                 while (!listOfAuctionHouses.isEmpty())
                 {
-                    System.out.println("\n Main Menu\\AuctionCentral \n");
+                    System.out.println("\n Main Menu\\AuctionCentral");
                     listOfAuctionHouses = requestListOfAuctionHouses();
                     printListOfAuctionHouses(listOfAuctionHouses);
 
@@ -214,7 +214,7 @@ public class Agent
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
         try
         {
-            System.out.println("\n Main Menu\\AuctionCentral\\" + auctionHouse.getHouseName() + "\n");
+            System.out.println("\n Main Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
             setCurrentAuctionHouseStreams(auctionHouse);
 
             ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
@@ -227,7 +227,7 @@ public class Agent
             AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
 
             System.out.println("\n Main Menu\\AuctionCentral\\"  + auctionHouse.getHouseName()
-                    + "\\" + itemBiddingOn.getName() + "\n");
+                    + "\\" + itemBiddingOn.getName());
 
             System.out.println(itemBiddingOn.getCurrentBid());
 
