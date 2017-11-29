@@ -18,110 +18,46 @@ import java.util.Set;
 
 public class Agent
 {
-    private String agentName = "Test1234";   //to have 100% unique agent IDs I think the names would have to be made from a server
-    private AcctKey bankAccount;    //given from a bank
-    private Integer biddingKey;      //given when registered with auction central
-    //private AuctionCentral
-    //private AuctionHouse
+    private String agentName = "";
+    private AcctKey bankAccount;
+    private Integer biddingKey;
 
     /**
-     * So an agent needs to be it's own client, so it will have it's own Main method and not a
-     * constructor. The client will somehow know the hostname of the Bank server and it will be the
-     * first argument when the Agent(client) program is launched, it will first pass the Bank the bankAccount
-     * object, letting the Bank know it wants to be registered, the Bank then returns the bankAccount object
-     * with the correctly filled out fields.
      *
-     *
-     * I've wrote a bit of code here, mainly to just work through the process of how the project will run. If any of the
-     * code seems really wrong, I don't mind rewriting it all. Lots of the Data Types for the objects are temporary,
-     * I just didn't feel like making the Auction Central class, Auction House class, or Auction item class; used Strings
-     * to represent them for now but can easily swap out later.
      */
 
     public static void main(String[] args) throws IOException, UnknownObjectException, ClassNotFoundException
     {
-//        if(args.length != 5)
-//        {
-//            System.err.println("Please retry and input the bank hostName, auction central hostname, portNumber of the bank, portNumber "
-//                                + "of the auction central and your user name.");
-//            System.exit(1);
-//        }
+        if(args.length != 5)
+        {
+            System.err.println("Please retry and input the bank hostName, auction central hostname, portNumber of the bank, portNumber "
+                                + "of the auction central and your user name.");
+            System.exit(1);
+        }
 
         Agent agent = new Agent();
 
-        //String bankHostName = args[0];  //bank host name will be first argument
-        //int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
-        String bankHostName = "localhost";
-        int bankPortNumber = 1031;
-
-        String auctionCentralHostName = "localhost"; //AC host name will be 2nd arg
-        int auctionCenPortNumber = 1027;  //port number for auction central will be fourth
+        String bankHostName = args[0];  //bank host name will be first argument
+        String auctionCentralHostName = args[1];
+        int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
+        int auctionCenPortNumber = Integer.parseInt(args[3]);
+        agent.agentName = args[4];
 
         try
         {
-            //Connect to Auction Central
             Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctionCenPortNumber);
-            System.out.println("trying to write object to bank..4");
             ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
             outAuctionCen.flush();
-            System.out.println("trying to write object to bank..5");
             ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
-            System.out.println("trying to write object to bank..6");
 
-            //Connect to the Bank
             Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
-            System.out.println("Trying to write object to bank..1");
             ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
-            System.out.println("Trying to write object to bank..2");
             outBank.flush();
             ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream());
-            System.out.println("Trying to write object to bank..3");
 
-            //sets up first bank account
-            UserAccount myAccount = new UserAccount(agent.agentName);
-            System.out.println("Trying to write object to bank..");
-            outBank.writeObject(myAccount);
-            outBank.flush();
-            System.out.println("Trying to read object from bank..");
-            agent.bankAccount = (AcctKey) inBank.readObject();
-
-            System.out.println("Read in account number and agent key:");
-            System.out.println("Bank number: " + agent.bankAccount.getAccountNumber());
-            System.out.println("Agent Key: " + agent.bankAccount.getKey() + "\n");
-
-            //Test
-
-            //2nd Bank Account
-//            UserAccount myAccount2 = new UserAccount("Jim");
-//            System.out.println("Trying to write object to bank..");
-//            outBank.writeObject(myAccount2);
-//            outBank.flush();
-//            System.out.println("Trying to read object from bank..");
-//            agent.bankAccount = (AcctKey) inBank.readObject();
-//
-//            System.out.println("Read in account number and agent key:");
-//            System.out.println("Bankunt number: " + agent.bankAccount.getAccountNumber());
-//            System.out.println("Agent Key: " + agent.bankAccount.getKey());
-
-            System.out.println("Inquiring on balance: ");
-            agent.inquireBankBalance(agentBankSocket, inBank, outBank);
-
-            //Test
-
-            //outAuctionCen.writeObject(agent.agentName);
-            System.out.println("Trying to write object to auction central...");
-            Integer tempIntObj = 123;
-            outAuctionCen.writeObject(tempIntObj);
-            outAuctionCen.flush();
-
-            System.out.println("Trying to read object from auction central...");
-            agent.biddingKey = (Integer) inAuctionCen.readObject();
-            System.out.println(agent.biddingKey.toString());
-            //outAuctionCen.writeObject("hey");
-            //Set<Registration> auctionHouses = (Set<Registration>) inAuctionCen.readObject();
-
-            //agent.printListOfAuctionHouses(auctionHouses);
-            agent.pollUserInput(agentBankSocket, inBank, outBank, outAuctionCen, inAuctionCen);
+            agent.registerWithBank(outBank, inBank);
+            agent.registerWithAuctionCentral(outAuctionCen, inAuctionCen);
+            agent.pollUserInput(inBank, outBank, outAuctionCen, inAuctionCen);
         }
         catch (UnknownHostException e)
         {
@@ -136,16 +72,61 @@ public class Agent
         }
     }
 
+    private void registerWithBank(ObjectOutputStream out, ObjectInputStream in)
+    {
+        try
+        {
+            UserAccount myAccount = new UserAccount(agentName);
+            out.writeObject(myAccount);
+            out.flush();
+            bankAccount = (AcctKey) in.readObject();
+
+            System.out.println("Read in account number and agent key:");
+            System.out.println("Bank number: " + bankAccount.getAccountNumber());
+            System.out.println("Agent Key: " + bankAccount.getKey() + "\n");
+
+            System.out.println("Inquiring on balance: ");
+            inquireBankBalance(in, out);
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void registerWithAuctionCentral(ObjectOutputStream out, ObjectInputStream in)
+    {
+        try
+        {
+            out.writeObject(bankAccount.getKey());
+            out.flush();
+            biddingKey = (Integer) in.readObject();
+            System.out.println(biddingKey.toString());
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
     /**
      * pollUserInput: the main while loop for the agent to interact with the servers. Different prompts
      * allow the user to display his balance or see a list of auction houses to join to start bidding on items.
-     * @param bankSocket from main when we create our bank socket
      * @param bankIn bank input stream
      * @param bankOut bank output stream
      * @param out auction central host name
      * @param in auction central port number given from user on start up
      */
-    private void pollUserInput(Socket bankSocket, ObjectInputStream bankIn, ObjectOutputStream bankOut,
+    private void pollUserInput(ObjectInputStream bankIn, ObjectOutputStream bankOut,
                                ObjectOutputStream out, ObjectInputStream in) throws UnknownObjectException, IOException, ClassNotFoundException
     {
         Scanner sc = new Scanner(System.in);
@@ -163,7 +144,7 @@ public class Agent
             }
             else if(input.equals("$"))
             {
-                inquireBankBalance(bankSocket, bankIn, bankOut);
+                inquireBankBalance(bankIn, bankOut);
             }
             else if(!input.equals("Exit"))
             {
@@ -248,7 +229,7 @@ public class Agent
         }
     }
 
-    private void inquireBankBalance(Socket bankSocket, ObjectInputStream bankIn, ObjectOutputStream bankOut)
+    private void inquireBankBalance(ObjectInputStream bankIn, ObjectOutputStream bankOut)
             throws IOException, ClassNotFoundException
     {
         bankOut.writeObject("Inquire");
