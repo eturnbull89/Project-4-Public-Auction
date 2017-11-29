@@ -126,6 +126,8 @@ class MiniHouse extends Thread
         //The agents bid key, used by auction central
         Integer agentKey = agentBid.getAgentBidKey();
 
+        System.out.println(agentKey);
+
         //The amount the agent wishes to bid.
         int bidAmount = agentBid.getBidAmount();
 
@@ -181,6 +183,9 @@ class MiniHouse extends Thread
 
                     //Update the items current bid amount.
                     items.get(itemIndex).setCurrentBid(bidAmount, houseKey);
+
+                    //Update the current bid amount in the item.
+                    item.setCurrentBid(bidAmount, houseKey);
 
                     //Update the highestBidderKey to the agents key
                     items.get(itemIndex).setHighestBidKey(agentKey);
