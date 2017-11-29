@@ -41,8 +41,14 @@ class MiniHouse extends Thread
             //Create an object output stream to the agent.
             ObjectOutputStream outFromHouse = new ObjectOutputStream(agentSocket.getOutputStream());
 
+            //Needed flush on output stream
+            outFromHouse.flush();
+
             //Create an object output stream to auction central.
             ObjectOutputStream toCentral = new ObjectOutputStream(centralSocket.getOutputStream());
+
+            //Needed flush on output stream
+            toCentral.flush();
 
             //Create an object input stream from an agent.
             ObjectInputStream inFromAgent = new ObjectInputStream(agentSocket.getInputStream());
