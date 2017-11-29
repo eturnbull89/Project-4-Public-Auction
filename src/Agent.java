@@ -194,7 +194,7 @@ public class Agent
             outAuctionCen.flush();
 
             ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();
-            //printListOfAuctionHouses(listOfAuctionHouses);
+            printListOfAuctionHouses(listOfAuctionHouses);
 
             System.out.println("Which auction house would you like to join?");
             Scanner sc = new Scanner(System.in);
@@ -223,10 +223,10 @@ public class Agent
     private void joinAuctionHouse(ArrayList<Registration> listOfAuctionHouses, int auctionHouseNum, String hostname)
             throws IOException, ClassNotFoundException
     {
-        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum);
+        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
         try
         (
-                Socket auctionHouseSocket = new Socket("FILLIN", 1234);
+                Socket auctionHouseSocket = new Socket(auctionHouse.getHostName(), auctionHouse.getHouseSocket());
                 ObjectOutputStream outAuctionHouse = new ObjectOutputStream(auctionHouseSocket.getOutputStream());
                 ObjectInputStream inAuctionHouse = new ObjectInputStream(auctionHouseSocket.getInputStream());
         )
@@ -267,16 +267,18 @@ public class Agent
     private void printListOfAuctionItems(ArrayList<AuctionItem> auctionItems)
     {
         int counter = 0;
+
         for(AuctionItem ai : auctionItems)
         {
             counter++;
-            System.out.println(counter + ". " + ai);
+            System.out.println(counter + ". " + ai.getName());
         }
     }
 
-    private void printListOfAuctionHouses(Set<Registration> auctionHouses)
+    private void printListOfAuctionHouses(ArrayList<Registration> auctionHouses)
     {
         int counter = 0;
+
         for(Registration ah : auctionHouses)
         {
             counter++;
