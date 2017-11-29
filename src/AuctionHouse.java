@@ -62,6 +62,7 @@ public class AuctionHouse
         //set up testing
         //house.testingMethod();
 
+        System.out.println("Registering with auction central...");
         //Register with auction central and set houseReg field
         house.register(house.houseHost, house.housePort, house.centralHost, house.centralPort);
 
@@ -178,12 +179,14 @@ public class AuctionHouse
             //Needed statement
             outFromHouse.flush();
 
+            System.out.println("Writing to auction central");
             //Write to auction central the created registration.
             outFromHouse.writeObject(centralReg);
 
             try
             {
                 //Receive back the confirmation object and set houseReg.
+                System.out.println("Confirming registration...");
                 this.houseReg = (Confirmation) inFromCentral.readObject();
             }
             catch (ClassNotFoundException e)
