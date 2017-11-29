@@ -21,6 +21,7 @@ public class Agent
     private String agentName = "";
     private AcctKey bankAccount;
     private Integer biddingKey;
+
     private ObjectInputStream inBank;
     private ObjectOutputStream outBank;
     private ObjectInputStream inAuctionCen;
@@ -45,43 +46,26 @@ public class Agent
 
         String bankHostName = args[0];  //bank host name will be first argument
         String auctionCentralHostName = args[1];
+
         int bankPortNumber = Integer.parseInt(args[2]); //port number for bank will be 3rd arg
         int auctionCenPortNumber = Integer.parseInt(args[3]);
+
         agent.agentName = args[4];
 
-        try
-        {
-            Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctionCenPortNumber);
-            agent.outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
-            agent.outAuctionCen.flush();
-            agent.inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
-
-            Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
-            agent.outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
-            agent.outBank.flush();
-            agent.inBank = new ObjectInputStream(agentBankSocket.getInputStream());
-
-            agent.registerWithBank();
-            agent.registerWithAuctionCentral();
-            agent.pollUserInput();
-        }
-        catch (UnknownHostException e)
-        {
-            e.printStackTrace();
-            System.err.println("Don't know about host ");
-            System.exit(1);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        agent.registerWithBank(bankHostName, bankPortNumber);
+        agent.registerWithAuctionCentral(auctionCentralHostName, auctionCenPortNumber);
+        agent.pollUserInput();
     }
 
-    private void registerWithBank()
+    private void registerWithBank(String bankHostName, int bankPortNumber)
     {
         try
         {
+            Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
+            outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
+            outBank.flush();
+            inBank = new ObjectInputStream(agentBankSocket.getInputStream());
+
             UserAccount myAccount = new UserAccount(agentName);
             outBank.writeObject(myAccount);
             outBank.flush();
@@ -104,10 +88,15 @@ public class Agent
         }
     }
 
-    public void registerWithAuctionCentral()
+    public void registerWithAuctionCentral(String acHostName, int acPortNum)
     {
         try
         {
+            Socket agentAuctionCentralSocket = new Socket(acHostName, acPortNum);
+            outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
+            outAuctionCen.flush();
+            inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
+
             outAuctionCen.writeObject(bankAccount.getKey());
             outAuctionCen.flush();
             biddingKey = (Integer) inAuctionCen.readObject();
@@ -125,8 +114,8 @@ public class Agent
     }
 
     /**
-     * pollUserInput: the main while loop for the agent to interact with the servers. Different prompts
-     * allow the user to display his balance or see a list of auction houses to join to start bidding on items.
+     * pollUserInput: the main while loop for the agent to interact with the servers. Depending on the users
+     * input, this method will lead to a trail of different prompts.
      */
     private void pollUserInput() throws UnknownObjectException, IOException, ClassNotFoundException
     {
@@ -134,7 +123,7 @@ public class Agent
         String input = "";
         while(!input.equals("Exit"))
         {
-            System.out.println("\n \\Main Menu");
+            System.out.println("\nMain Menu");
             System.out.println("Please enter the key corresponding to what you want to do\n" +
                     "(1) see list of auction houses \n" +
                     "($) see current account balance\n" +
@@ -172,7 +161,7 @@ public class Agent
             {
                 while (!listOfAuctionHouses.isEmpty())
                 {
-                    System.out.println("\n Main Menu\\AuctionCentral");
+                    System.out.println("\nMain Menu\\AuctionCentral");
                     listOfAuctionHouses = requestListOfAuctionHouses();
                     printListOfAuctionHouses(listOfAuctionHouses);
 
@@ -198,11 +187,7 @@ public class Agent
     }
 
     /**
-     * joinAuctionHouse: once a user joins an auction house, will display the list of auction items.
-     * We will then ask the agent which item they're interested in bidding for. Once we get the item they're bidding
-     * for, we will display how much the current bid for that item is. We will then write to the auction house our
-     * bidding key, the item we're bidding on, and the amount we're bidding. The bidding process may be put into it's
-     * own method later, and be in a while loop to go until the itemBiddingOn timer runs out.
+     * joinAuctionHouse:
      * @param listOfAuctionHouses
      * @param auctionHouseNum
      * @throws IOException
@@ -213,7 +198,7 @@ public class Agent
     {
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
 
-        System.out.println("\n Main Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
+        System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
         setCurrentAuctionHouseStreams(auctionHouse);
 
         ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
@@ -222,7 +207,7 @@ public class Agent
 
         while(!listOfAuctionItems.isEmpty())
         {
-            System.out.println("Which auction item would you like to bid on? Or enter Exit to leave auction house");
+            System.out.println("Which auction item would you like to bid on? Or type Exit to leave auction house");
             Scanner sc = new Scanner(System.in);
             String input = sc.next();
             if(input.equals("Exit"))
@@ -237,19 +222,24 @@ public class Agent
         }
     }
 
+    /**
+     * bidOnAuctionItem:
+     * @param itemBiddingOn
+     * @param auctionHouseName
+     */
     private void bidOnAuctionItem(AuctionItem itemBiddingOn, String auctionHouseName)
     {
         try
         {
             Scanner sc = new Scanner(System.in);
-            System.out.println("\n Main Menu\\AuctionCentral\\" + auctionHouseName
+            System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouseName
                     + "\\" + itemBiddingOn.getName());
 
             System.out.println("Current Highest bid: " + itemBiddingOn.getCurrentBid());
 
             System.out.println("How much would you like to bid?");
             int bidAmount = sc.nextInt();
-            Bid agentBidOnItem = new Bid(bankAccount.getKey(), itemBiddingOn);
+            Bid agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
             agentBidOnItem.setBidAmount(bidAmount);
 
             outCurrentAuctionHouse.writeObject(agentBidOnItem);
@@ -257,25 +247,35 @@ public class Agent
 
             while (!agentBidOnItem.getBidStatus().equals("Over"))
             {
+                int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
+
                 inquireBankBalance();
 
-                System.out.println("Current highest bid on " + itemBiddingOn.getName() + " : " + itemBiddingOn.getCurrentBid());
+                System.out.println("Current highest bid on " + itemBiddingOn.getName() + " : "
+                        + highestBid);
 
                 System.out.println("How much would you like to bid? Or type Exit to stop bidding on " + itemBiddingOn.getName());
                 String bidInput = sc.next();
-                if (bidInput.equals("Exit"))
+                if (bidInput.toLowerCase().equals("exit"))
+                {
                     return;
-                else
+                }
+                else if(isNumeric(bidInput))
                 {
                     bidAmount = Integer.parseInt(bidInput);
-                    if (bidAmount < itemBiddingOn.getCurrentBid())
+                    if (bidAmount < highestBid)
                     {
                         System.out.println("Please enter a higher bid");
                     } else
                     {
                         agentBidOnItem.setBidAmount(bidAmount);
                         outCurrentAuctionHouse.writeObject(agentBidOnItem);
+                        agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
                     }
+                }
+                else
+                {
+                    System.out.println("Please either enter Exit to stop bidding, or a number to bid.");
                 }
             }
         }
@@ -299,6 +299,11 @@ public class Agent
         System.out.println(balance);
     }
 
+    /**
+     * setCurrentAuctionHouseStream:
+     * take the auctionHouse registration and create the auction house socket and communication streams
+     * @param auctionHouse the auction house we're connecting to
+     */
     public void setCurrentAuctionHouseStreams(Registration auctionHouse)
     {
         try
@@ -313,6 +318,12 @@ public class Agent
         }
     }
 
+    /**
+     * requestListOfAuctionItems:
+     * send a string over the auction house out stream. read in the input from auction house,
+     * set the input as the list of auction items.
+     * @return the list of auction items in this auction house
+     */
     public ArrayList<AuctionItem> requestListOfAuctionItems()
     {
         try
@@ -335,6 +346,12 @@ public class Agent
         return null;
     }
 
+    /**
+     * requestListOfAuctionHouses:
+     * send a string over the auction central out stream. read in the input from auction central,
+     * set the input as the list of auction houses.
+     * @return the list of auction houses
+     */
     private ArrayList<Registration> requestListOfAuctionHouses()
     {
         try
@@ -378,5 +395,10 @@ public class Agent
             counter++;
             System.out.println(counter + ". " + ah.getHouseName());
         }
+    }
+
+    public boolean isNumeric(String s)
+    {
+        return s != null && s.matches("[-+]?\\d*\\.?\\d+");
     }
 }

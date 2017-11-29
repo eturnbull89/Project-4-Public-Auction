@@ -167,7 +167,7 @@ class MiniHouse extends Thread
             if(holdConfirm && items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
             {
                 //Transaction that will be used to release the previous agents funds.
-                AuctionTransaction release;
+                AuctionTransaction release = null;
 
                 //Synchronize on the item in the items list to update the necessary fields before another agents thread
                 //can change them as well. This might be a problem later not sure yet.
@@ -182,18 +182,30 @@ class MiniHouse extends Thread
                     //Update the items current bid amount.
                     items.get(itemIndex).setCurrentBid(bidAmount, houseKey);
 
+                    System.out.println(items.get(itemIndex).getCurrentBid());
+
+                    //Update the current bid amount in the item.
+                    item.setCurrentBid(bidAmount, houseKey);
+
                     //Update the highestBidderKey to the agents key
                     items.get(itemIndex).setHighestBidKey(agentKey);
 
-                    //Set release to a new transaction.
-                    release = new AuctionTransaction(items.get(itemIndex).getPreviousBidderKey(),
-                                              items.get(itemIndex).getPreviousBid(), 1);
+                    if(items.get(itemIndex).getPreviousBidderKey() != null)
+                    {
+                        //Set release to a new transaction.
+                        release = new AuctionTransaction(items.get(itemIndex).getPreviousBidderKey(),
+                                items.get(itemIndex).getPreviousBid(), 1);
+                    }
                 }
 
                 try
                 {
-                    //Send the Transaction to auction central.
-                    toCentral.writeObject(release);
+                    if(release != null)
+                    {
+                        //Send the Transaction to auction central.
+                        toCentral.writeObject(release);
+                    }
+
                 }
                 catch (IOException e)
                 {
