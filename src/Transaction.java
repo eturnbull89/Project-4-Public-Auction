@@ -1,4 +1,7 @@
-public class Transaction {
+import java.io.Serializable;
+
+public class Transaction implements Serializable
+{
 
     public Integer bankKey;
     public int amount;
