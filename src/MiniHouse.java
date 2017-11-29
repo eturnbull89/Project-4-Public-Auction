@@ -73,10 +73,12 @@ class MiniHouse extends Thread
                     //Create a bid to pass back to the agent.
                     Bid passedBid = bidProtocol(centralIn, centralOut, (Bid) passed);
 
-                    System.out.println();
+                    System.out.println("Bid protocol finished");
 
                     //Write the created bid back to the agent.
                     outFromHouse.writeObject(passedBid);
+
+                    System.out.println("Passing back the bid");
 
                     //Implement a timer here if the bid was accepted.
                 }
@@ -136,18 +138,22 @@ class MiniHouse extends Thread
         //If the agents bid amount is greater then the current bid create a new hold.
         if(items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
         {
+
             //Create a transaction to pass to auction central.
             AuctionTransaction hold = new AuctionTransaction(agentKey, bidAmount, -1);
+            System.out.println("Created auction transaction");
 
             try
             {
                 //Write the Transaction object to central
                 toCentral.writeObject(hold);
 
+                System.out.println("Wrote the auction transaction to auction central");
+
                 //Get centrals confirmation of hold.
                 holdConfirm = (Boolean) fromCentral.readObject();
 
-                System.out.println("getting to line 156");
+                System.out.println("Recived confirmation of hold");
 
             }
             catch (IOException | ClassNotFoundException e)
