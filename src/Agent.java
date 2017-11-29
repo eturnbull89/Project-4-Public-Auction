@@ -214,10 +214,11 @@ public class Agent
     private void joinAuctionHouse(ArrayList<Registration> listOfAuctionHouses, int auctionHouseNum)
             throws IOException, ClassNotFoundException
     {
-        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum);
+        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
+
         try
         (
-                Socket auctionHouseSocket = new Socket("FILLIN", 1234);
+                Socket auctionHouseSocket = new Socket(auctionHouse.getHostName(), auctionHouse.getHouseSocket());
                 ObjectOutputStream outAuctionHouse = new ObjectOutputStream(auctionHouseSocket.getOutputStream());
                 ObjectInputStream inAuctionHouse = new ObjectInputStream(auctionHouseSocket.getInputStream());
         )
