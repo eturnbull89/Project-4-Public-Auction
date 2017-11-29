@@ -100,6 +100,7 @@ class MiniHouse extends Thread
                     //If the string is equal to list return the item list to the agent.
                     else if(message.equals("list"))
                     {
+                        System.out.println(items.get(0).getCurrentBid());
                         outFromHouse.writeObject(items);
                     }
 
