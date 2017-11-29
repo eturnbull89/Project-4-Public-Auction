@@ -1,6 +1,3 @@
-package AuctionCentral;
-
-import AuctionCentral.SerializedObjects.Registration;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -73,15 +70,25 @@ public class AuctionCentralServer
 
                     runningThreads.add(newThread); //add newThread to the list of running threads
                     newThread.start();
+
                 }else if(fromClient instanceof Integer){
                     //create a new thread to communicate with this Agent
-                    Runnable talkToAgent = () -> ACP.CommunicateWithAgent(((Integer)fromClient),in,out);
+                    Runnable talkToAgent = () -> ACP.CommunicateWithAgent(((Integer)fromClient), clientSocket, in, out);
                     Thread newThread = new Thread(talkToAgent);
 
                     runningThreads.add(newThread); //add newThread to the list of running threads
                     newThread.start();
                 }
+                else
+                {
+                    Runnable talkToAgent = () -> ACP.generalAgentCom(fromClient, out, in);
 
+                    Thread Runner = new Thread(talkToAgent);
+
+                    runningThreads.add(Runner);
+
+                    Runner.start();
+                }
             }
         }catch (IOException|ClassNotFoundException e){
             e.printStackTrace();

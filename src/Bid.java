@@ -1,3 +1,5 @@
+import java.io.Serializable;
+
 /**
  * =============================================
  * Project 4 Public Auction - CS 351 UNM
@@ -8,7 +10,7 @@
  * =============================================
  */
 
-public class Bid
+public class Bid implements Serializable
 {
     private final AuctionItem itemBiddingOn;
     private final Integer agentBidKey;

@@ -1,10 +1,8 @@
-package AuctionCentral;
-
-import AuctionCentral.SerializedObjects.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -93,7 +91,33 @@ public class AuctionCentralProtocol
         }
     }
 
-    public void CommunicateWithAgent(Integer agentBankKey, ObjectInputStream in, ObjectOutputStream out)
+    void generalAgentCom(Object object, ObjectOutputStream out, ObjectInputStream in)
+    {
+        while (true)
+        {
+
+            System.out.println("waiting for agent communication");
+            try
+            {
+                if (object instanceof String)
+                {
+                    //create arraylist of registrations
+                    ArrayList<Registration> keySet = new ArrayList<>();
+
+                    for (Registration e : HouseToSecretKey.keySet()) keySet.add(e);
+
+                    out.writeObject(keySet);
+                    out.flush();
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void CommunicateWithAgent(Integer agentBankKey, Socket clientSocket, ObjectInputStream in,  ObjectOutputStream out)
     {
         //add bidkeyToBankKey mapping
         System.out.println("New agent sent bankKey: " + agentBankKey);
@@ -108,26 +132,31 @@ public class AuctionCentralProtocol
         try
         {
             out.writeObject(bidKey);
-            Object fromAgent;
-            while (true)
+            //Object fromAgent;
+            out.flush();
+
+
+            /*while (true)
             {
 
                 System.out.println("waiting for agent communication");
+
                 fromAgent = in.readObject();
 
                 if (fromAgent instanceof String)
                 {
-                    System.out.print(fromAgent);
+                    System.out.print(" here");
 
                     //create arraylist of registrations
                     ArrayList<Registration> keySet = new ArrayList<>();
+
                     for (Registration e : HouseToSecretKey.keySet()) keySet.add(e);
 
                     out.writeObject(keySet);
                     out.flush();
                 }
-            }
-        }catch(IOException|ClassNotFoundException e){
+            }*/
+        }catch(IOException e){
             System.out.println("lost connection to agent");
             //in.close();
            // out.close();

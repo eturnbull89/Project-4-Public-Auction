@@ -32,6 +32,10 @@ public class AuctionHouse
 
     private ArrayList<AuctionItem> items;
 
+    private ObjectInputStream centralIn;
+
+    private ObjectOutputStream centralOut;
+
     public static void main(String[] args) throws IOException
     {
         //Check that initial arguments number 4, if not throw an error message and exit
@@ -59,13 +63,6 @@ public class AuctionHouse
         //auction central server host name, fifth argument.
         house.centralHost = args[4];
 
-        //set up testing
-        //house.testingMethod();
-
-        System.out.println("Registering with auction central...");
-        //Register with auction central and set houseReg field
-        house.register(house.houseHost, house.housePort, house.centralHost, house.centralPort);
-
         //Commented out until it can be tested.
         //Create a server socket for this auction house.
         ServerSocket serverSocket;
@@ -73,18 +70,41 @@ public class AuctionHouse
         //Boolean to keep the creating sockets for each agent that connects.
         boolean listeningSocket = true;
 
+        boolean registered = false;
+
         try
         {
             //Create a server socket from the given house port number
             serverSocket = new ServerSocket(house.housePort);
 
+            //Create the socket used to talk to the auction central
+            Socket centralSocket = new Socket(house.centralHost, house.centralPort);
+
+            //Create an object output stream from this auction house.
+            ObjectOutputStream centralOut = new ObjectOutputStream(centralSocket.getOutputStream());
+
+            //Create an object input stream from auction central
+            ObjectInputStream centralIn = new ObjectInputStream(centralSocket.getInputStream());
+
             while(listeningSocket)
             {
+                if(!registered)
+                {
+                    //Register with auction central and set houseReg field
+                    house.register(house.houseHost, house.housePort, house.centralHost, house.centralPort, centralOut,
+                                   centralIn);
+
+                    //Set the house items list
+                    house.itemLists(house.houseReg);
+
+                    registered = true;
+                }
                 //Create a socket from the agent that connects to the auction house.
                 Socket clientSocket = serverSocket.accept();
 
                 //Create a miniHouse object for each agent that connects to auction central
-                MiniHouse mini = new MiniHouse(clientSocket, house.centralSocket, house.items, house.houseReg.getAuctionKey());
+                MiniHouse mini = new MiniHouse(clientSocket, centralSocket, house.items, house.houseReg.getAuctionKey(),
+                                               centralOut, centralIn);
 
                 //Start the miniHouse thread for each agent.
                 mini.start();
@@ -96,50 +116,6 @@ public class AuctionHouse
         {
             System.err.println("could not listen on port: "+ house.housePort);
         }
-    }
-
-    //Method used to test out some of the auction house methods and confirm if they work.
-    private void testingMethod()
-    {
-        //Check that the server socket can be opened and print a message.
-        try(
-                ServerSocket serverSocket = new ServerSocket(housePort)
-                )
-        {
-            System.out.println("Server socket opened");
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        //Create a testing confirmation
-        Confirmation testCon = new Confirmation(housePort, 2256);
-
-        //Create an auction house item list to check that itemList works
-        ArrayList<AuctionItem> houseItems = itemLists(testCon);
-
-        //Print the command line arguments to check they are being set.
-        System.out.println("houseHost = "+ houseHost +", port = "+housePort+", house name = "+ houseName+", centralPort = "
-                           + centralPort);
-
-        //Print each of the items info to check that it was created, in this case the first 3 should be paintings
-        for (int i = 0; i < 3; i ++)
-        {
-            System.out.println("Auction house id = "+houseItems.get(i).getAuctionHouseId());
-            System.out.println("Item "+houseItems.get(i).getName());
-            System.out.println("Item id = "+houseItems.get(i).getItemId());
-            System.out.println("Minimum bid = "+houseItems.get(i).getMinimumBid());
-            System.out.println("Current bid = "+houseItems.get(i).getCurrentBid());
-        }
-
-        //Check if the current bit can be set using the key, will currently allow bids under min bid
-        houseItems.get(2).setCurrentBid(3, testCon.getAuctionKey());
-        System.out.println("Auction house id = "+houseItems.get(2).getAuctionHouseId());
-        System.out.println("Item "+houseItems.get(2).getName());
-        System.out.println("Item id = "+houseItems.get(2).getItemId());
-        System.out.println("Minimum bid = "+houseItems.get(2).getMinimumBid());
-        System.out.println("Current bid = "+houseItems.get(2).getCurrentBid());
     }
 
     //***********************************
@@ -157,49 +133,31 @@ public class AuctionHouse
     //auction central. It then closes the object input and output streams. If there were any errors it prints out
     //a message corresponding to the error.
     //***********************************
-    private void register(String houseHost, int housePort, String centralHost, int centralPort) throws IOException
+    private void register(String houseHost, int housePort, String centralHost, int centralPort, ObjectOutputStream out,
+                          ObjectInputStream in) throws IOException
     {
         //Registration object that will be sent to auction central to register.
         Registration centralReg = new Registration(houseName, housePort, houseHost);
 
-        try(
-                //Create the socket used to talk to the auction central
-                Socket centralSocket = new Socket(centralHost, centralPort);
-
-                //Create an object output stream from this auction house.
-                ObjectOutputStream outFromHouse = new ObjectOutputStream(centralSocket.getOutputStream());
-
-                //Create an object input stream from auction central
-                ObjectInputStream inFromCentral = new ObjectInputStream(centralSocket.getInputStream())
-                )
+        try
         {
-            //Set the centralSocket field to the created socket for use later.
-            this.centralSocket = centralSocket;
-
             //Needed statement
-            outFromHouse.flush();
+            out.flush();
 
-            System.out.println("Writing to auction central");
             //Write to auction central the created registration.
-            outFromHouse.writeObject(centralReg);
+            out.writeObject(centralReg);
 
             try
             {
                 //Receive back the confirmation object and set houseReg.
-                System.out.println("Confirming registration...");
-                this.houseReg = (Confirmation) inFromCentral.readObject();
+                this.houseReg = (Confirmation) in.readObject();
+                System.out.println("house Registered, id is = "+this.houseReg.getPublicId());
+
             }
+
             catch (ClassNotFoundException e)
             {
                 e.printStackTrace();
-            }
-            finally
-            {
-                //Close the object input stream from auction central.
-                inFromCentral.close();
-
-                //Close the object output stream from this auction house.
-                outFromHouse.close();
             }
 
         }
@@ -226,7 +184,7 @@ public class AuctionHouse
     //AuctionItem object and add the newly created auction item to the houseList array list. It then updates
     //the value of listIndex by 2.
     //***********************************
-    private ArrayList<AuctionItem> itemLists(Confirmation houseReg)
+    private void itemLists(Confirmation houseReg)
     {
         //List of each houses auction items. List that will be returned.
         ArrayList<AuctionItem> houseList = new ArrayList<>();
@@ -259,7 +217,7 @@ public class AuctionHouse
             listIndex = listIndex + 2;
         }
 
-        return houseList;
+        this.items = houseList;
     }
 
     //***********************************
