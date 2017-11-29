@@ -62,7 +62,7 @@ public class AuctionCentralProtocol
                     fromHouse = in.readObject();
                     if (fromHouse instanceof AuctionTransaction)
                     {
-
+                        System.out.println("Transaction recived. ");
                         AuctionTransaction ClientBid = (AuctionTransaction) fromHouse;
 
                         //TODO: make Grabbing the key Atomic
@@ -74,9 +74,10 @@ public class AuctionCentralProtocol
 
                         //send transaction to bank and
                         //wait for bankServer response on the success of the transaction
-                        boolean result = bankConnection.RequestFromBank(trans);
+                        Boolean result = bankConnection.RequestFromBank(trans);
 
                         out.writeObject(result);
+                        System.out.println("Result sent");
                     } else
                     {
                         out.writeObject(false);
@@ -145,8 +146,6 @@ public class AuctionCentralProtocol
 
                 if (fromAgent instanceof String)
                 {
-                    System.out.print(" here");
-
                     //create arraylist of registrations
                     ArrayList<Registration> keySet = new ArrayList<>();
 
