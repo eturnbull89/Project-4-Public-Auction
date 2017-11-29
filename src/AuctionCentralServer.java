@@ -80,14 +80,6 @@ public class AuctionCentralServer
                     runningThreads.add(newThread); //add newThread to the list of running threads
                     newThread.start();
                 }
-                else
-                {
-                    System.out.println("Returning auction houses to agent...");
-                    Runnable talkToAgent = () -> ACP.generalAgentCom(fromClient, out, in);
-                    Thread Runner = new Thread(talkToAgent);
-                    runningThreads.add(Runner);
-                    Runner.start();
-                }
             }
         }catch (IOException|ClassNotFoundException e){
             e.printStackTrace();
