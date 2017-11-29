@@ -23,6 +23,8 @@ public class Agent
     private Integer biddingKey;
     private ObjectInputStream inBank;
     private ObjectOutputStream outBank;
+    private ObjectInputStream inAuctionCen;
+    private ObjectOutputStream outAuctionCen;
     private ObjectInputStream inCurrentAuctionHouse;
     private ObjectOutputStream outCurrentAuctionHouse;
 
@@ -50,9 +52,9 @@ public class Agent
         try
         {
             Socket agentAuctionCentralSocket = new Socket(auctionCentralHostName, auctionCenPortNumber);
-            ObjectOutputStream outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
-            outAuctionCen.flush();
-            ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
+            agent.outAuctionCen = new ObjectOutputStream(agentAuctionCentralSocket.getOutputStream());
+            agent.outAuctionCen.flush();
+            agent.inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
 
             Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
             agent.outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
@@ -60,8 +62,8 @@ public class Agent
             agent.inBank = new ObjectInputStream(agentBankSocket.getInputStream());
 
             agent.registerWithBank();
-            agent.registerWithAuctionCentral(outAuctionCen, inAuctionCen);
-            agent.pollUserInput(outAuctionCen, inAuctionCen);
+            agent.registerWithAuctionCentral();
+            agent.pollUserInput();
         }
         catch (UnknownHostException e)
         {
@@ -102,13 +104,13 @@ public class Agent
         }
     }
 
-    public void registerWithAuctionCentral(ObjectOutputStream out, ObjectInputStream in)
+    public void registerWithAuctionCentral()
     {
         try
         {
-            out.writeObject(bankAccount.getKey());
-            out.flush();
-            biddingKey = (Integer) in.readObject();
+            outAuctionCen.writeObject(bankAccount.getKey());
+            outAuctionCen.flush();
+            biddingKey = (Integer) inAuctionCen.readObject();
             System.out.println(biddingKey.toString());
         }
         catch(IOException e)
@@ -125,11 +127,8 @@ public class Agent
     /**
      * pollUserInput: the main while loop for the agent to interact with the servers. Different prompts
      * allow the user to display his balance or see a list of auction houses to join to start bidding on items.
-     * @param out auction central host name
-     * @param in auction central port number given from user on start up
      */
-    private void pollUserInput(ObjectOutputStream out, ObjectInputStream in)
-            throws UnknownObjectException, IOException, ClassNotFoundException
+    private void pollUserInput() throws UnknownObjectException, IOException, ClassNotFoundException
     {
         Scanner sc = new Scanner(System.in);
         String input = "";
@@ -143,7 +142,7 @@ public class Agent
             input = sc.next();
             if(input.equals("1"))
             {
-                askAcForAh(out, in);
+                askAcForAh();
             }
             else if(input.equals("$"))
             {
@@ -161,22 +160,20 @@ public class Agent
      * askAcForAh (ask auction central for auction houses): this method will communicate with the auction central over a
      * socket to get the list of auction houses. once the auction central returns the list of auction houses, we will
      * ask the agent which house they are wanting to join, we will then join that house to start bidding on items.
-     * @param outAuctionCen auction central host name
-     * @param inAuctionCen auction central port number
      */
-    private void askAcForAh(ObjectOutputStream outAuctionCen, ObjectInputStream inAuctionCen) throws UnknownObjectException, IOException
+    private void askAcForAh() throws UnknownObjectException, IOException
     {
         try
         {
 
-            ArrayList<Registration> listOfAuctionHouses = requestListOfAuctionHouses(outAuctionCen, inAuctionCen);
+            ArrayList<Registration> listOfAuctionHouses = requestListOfAuctionHouses();
 
             if(listOfAuctionHouses != null)
             {
                 while (!listOfAuctionHouses.isEmpty())
                 {
                     System.out.println("\n Main Menu\\AuctionCentral \n");
-                    listOfAuctionHouses = requestListOfAuctionHouses(outAuctionCen, inAuctionCen);
+                    listOfAuctionHouses = requestListOfAuctionHouses();
                     printListOfAuctionHouses(listOfAuctionHouses);
 
                     System.out.println("Which auction house would you like to join? Or type Exit to quit");
@@ -228,7 +225,7 @@ public class Agent
             Scanner sc = new Scanner(System.in);
             int itemNumber = sc.nextInt();
             AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
-            
+
             System.out.println("\n Main Menu\\AuctionCentral\\"  + auctionHouse.getHouseName()
                     + "\\" + itemBiddingOn.getName() + "\n");
 
@@ -318,15 +315,18 @@ public class Agent
         return null;
     }
 
-    private ArrayList<Registration> requestListOfAuctionHouses(ObjectOutputStream out, ObjectInputStream in)
+    private ArrayList<Registration> requestListOfAuctionHouses()
     {
         try
         {
+            System.out.println("Trying to request for auction houses...");
             String requestForAuctionHouses = "AuctionHouses";
-            out.writeObject(requestForAuctionHouses);
-            out.flush();
+            outAuctionCen.writeObject(requestForAuctionHouses);
+            outAuctionCen.flush();
 
-            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)in.readObject();
+            System.out.println("Trying to read in auction houses...");
+            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();
+            System.out.println("Returning auction houses...");
             return listOfAuctionHouses;
         }
         catch(IOException e)

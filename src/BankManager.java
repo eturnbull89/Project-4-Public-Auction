@@ -19,7 +19,6 @@ public class BankManager
     public static void main(String[] args)
     {
         Bank bank = new Bank();
-
         try
         {
             //Auction Central Connection

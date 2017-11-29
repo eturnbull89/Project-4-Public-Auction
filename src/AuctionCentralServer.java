@@ -81,12 +81,10 @@ public class AuctionCentralServer
                 }
                 else
                 {
+                    System.out.println("Returning auction houses to agent...");
                     Runnable talkToAgent = () -> ACP.generalAgentCom(fromClient, out, in);
-
                     Thread Runner = new Thread(talkToAgent);
-
                     runningThreads.add(Runner);
-
                     Runner.start();
                 }
             }
