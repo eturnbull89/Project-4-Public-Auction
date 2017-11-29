@@ -256,9 +256,11 @@ public class Agent
 
                 System.out.println("How much would you like to bid? Or type Exit to stop bidding on " + itemBiddingOn.getName());
                 String bidInput = sc.next();
-                if (bidInput.equals("Exit"))
+                if (bidInput.toLowerCase().equals("exit"))
+                {
                     return;
-                else
+                }
+                else if(isNumeric(bidInput))
                 {
                     bidAmount = Integer.parseInt(bidInput);
                     if (bidAmount < highestBid)
@@ -270,6 +272,10 @@ public class Agent
                         outCurrentAuctionHouse.writeObject(agentBidOnItem);
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
                     }
+                }
+                else
+                {
+                    System.out.println("Please either enter Exit to stop bidding, or a number to bid.");
                 }
             }
         }
@@ -389,5 +395,10 @@ public class Agent
             counter++;
             System.out.println(counter + ". " + ah.getHouseName());
         }
+    }
+
+    public boolean isNumeric(String s)
+    {
+        return s != null && s.matches("[-+]?\\d*\\.?\\d+");
     }
 }
