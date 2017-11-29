@@ -21,6 +21,7 @@ public class Agent
     private String agentName = "";
     private AcctKey bankAccount;
     private Integer biddingKey;
+
     private ObjectInputStream inBank;
     private ObjectOutputStream outBank;
     private ObjectInputStream inAuctionCen;
@@ -134,7 +135,7 @@ public class Agent
         String input = "";
         while(!input.equals("Exit"))
         {
-            System.out.println("\n \\Main Menu");
+            System.out.println("\nMain Menu");
             System.out.println("Please enter the key corresponding to what you want to do\n" +
                     "(1) see list of auction houses \n" +
                     "($) see current account balance\n" +
@@ -172,7 +173,7 @@ public class Agent
             {
                 while (!listOfAuctionHouses.isEmpty())
                 {
-                    System.out.println("\n Main Menu\\AuctionCentral");
+                    System.out.println("\nMain Menu\\AuctionCentral");
                     listOfAuctionHouses = requestListOfAuctionHouses();
                     printListOfAuctionHouses(listOfAuctionHouses);
 
@@ -213,7 +214,7 @@ public class Agent
     {
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
 
-        System.out.println("\n Main Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
+        System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
         setCurrentAuctionHouseStreams(auctionHouse);
 
         ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
@@ -222,7 +223,7 @@ public class Agent
 
         while(!listOfAuctionItems.isEmpty())
         {
-            System.out.println("Which auction item would you like to bid on? Or enter Exit to leave auction house");
+            System.out.println("Which auction item would you like to bid on? Or type Exit to leave auction house");
             Scanner sc = new Scanner(System.in);
             String input = sc.next();
             if(input.equals("Exit"))
@@ -242,14 +243,14 @@ public class Agent
         try
         {
             Scanner sc = new Scanner(System.in);
-            System.out.println("\n Main Menu\\AuctionCentral\\" + auctionHouseName
+            System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouseName
                     + "\\" + itemBiddingOn.getName());
 
             System.out.println("Current Highest bid: " + itemBiddingOn.getCurrentBid());
 
             System.out.println("How much would you like to bid?");
             int bidAmount = sc.nextInt();
-            Bid agentBidOnItem = new Bid(bankAccount.getKey(), itemBiddingOn);
+            Bid agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
             agentBidOnItem.setBidAmount(bidAmount);
 
             outCurrentAuctionHouse.writeObject(agentBidOnItem);
@@ -257,9 +258,12 @@ public class Agent
 
             while (!agentBidOnItem.getBidStatus().equals("Over"))
             {
+                int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
+
                 inquireBankBalance();
 
-                System.out.println("Current highest bid on " + itemBiddingOn.getName() + " : " + itemBiddingOn.getCurrentBid());
+                System.out.println("Current highest bid on " + itemBiddingOn.getName() + " : "
+                        + highestBid);
 
                 System.out.println("How much would you like to bid? Or type Exit to stop bidding on " + itemBiddingOn.getName());
                 String bidInput = sc.next();
@@ -268,7 +272,7 @@ public class Agent
                 else
                 {
                     bidAmount = Integer.parseInt(bidInput);
-                    if (bidAmount < itemBiddingOn.getCurrentBid())
+                    if (bidAmount < highestBid)
                     {
                         System.out.println("Please enter a higher bid");
                     } else
