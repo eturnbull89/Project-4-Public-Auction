@@ -21,6 +21,10 @@ public class Agent
     private String agentName = "";
     private AcctKey bankAccount;
     private Integer biddingKey;
+    private ObjectInputStream inBank;
+    private ObjectOutputStream outBank;
+    private ObjectInputStream inCurrentAuctionHouse;
+    private ObjectOutputStream outCurrentAuctionHouse;
 
     /**
      *
@@ -51,13 +55,13 @@ public class Agent
             ObjectInputStream inAuctionCen = new ObjectInputStream(agentAuctionCentralSocket.getInputStream());
 
             Socket agentBankSocket = new Socket(bankHostName, bankPortNumber);
-            ObjectOutputStream outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
-            outBank.flush();
-            ObjectInputStream inBank = new ObjectInputStream(agentBankSocket.getInputStream());
+            agent.outBank = new ObjectOutputStream(agentBankSocket.getOutputStream());
+            agent.outBank.flush();
+            agent.inBank = new ObjectInputStream(agentBankSocket.getInputStream());
 
-            agent.registerWithBank(outBank, inBank);
+            agent.registerWithBank();
             agent.registerWithAuctionCentral(outAuctionCen, inAuctionCen);
-            agent.pollUserInput(inBank, outBank, outAuctionCen, inAuctionCen);
+            agent.pollUserInput(outAuctionCen, inAuctionCen);
         }
         catch (UnknownHostException e)
         {
@@ -72,21 +76,21 @@ public class Agent
         }
     }
 
-    private void registerWithBank(ObjectOutputStream out, ObjectInputStream in)
+    private void registerWithBank()
     {
         try
         {
             UserAccount myAccount = new UserAccount(agentName);
-            out.writeObject(myAccount);
-            out.flush();
-            bankAccount = (AcctKey) in.readObject();
+            outBank.writeObject(myAccount);
+            outBank.flush();
+            bankAccount = (AcctKey) inBank.readObject();
 
             System.out.println("Read in account number and agent key:");
             System.out.println("Bank number: " + bankAccount.getAccountNumber());
             System.out.println("Agent Key: " + bankAccount.getKey() + "\n");
 
             System.out.println("Inquiring on balance: ");
-            inquireBankBalance(in, out);
+            inquireBankBalance();
         }
         catch(IOException e)
         {
@@ -121,13 +125,11 @@ public class Agent
     /**
      * pollUserInput: the main while loop for the agent to interact with the servers. Different prompts
      * allow the user to display his balance or see a list of auction houses to join to start bidding on items.
-     * @param bankIn bank input stream
-     * @param bankOut bank output stream
      * @param out auction central host name
      * @param in auction central port number given from user on start up
      */
-    private void pollUserInput(ObjectInputStream bankIn, ObjectOutputStream bankOut,
-                               ObjectOutputStream out, ObjectInputStream in) throws UnknownObjectException, IOException, ClassNotFoundException
+    private void pollUserInput(ObjectOutputStream out, ObjectInputStream in)
+            throws UnknownObjectException, IOException, ClassNotFoundException
     {
         Scanner sc = new Scanner(System.in);
         String input = "";
@@ -144,7 +146,7 @@ public class Agent
             }
             else if(input.equals("$"))
             {
-                inquireBankBalance(bankIn, bankOut);
+                inquireBankBalance();
             }
             else if(!input.equals("Exit"))
             {
@@ -165,20 +167,32 @@ public class Agent
     {
         try
         {
-            String requestForAuctionHouses = "AuctionHouses";
-            outAuctionCen.writeObject(requestForAuctionHouses);
-            outAuctionCen.flush();
 
-            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();
-            printListOfAuctionHouses(listOfAuctionHouses);
+            ArrayList<Registration> listOfAuctionHouses = requestListOfAuctionHouses(outAuctionCen, inAuctionCen);
 
-            System.out.println("Which auction house would you like to join?");
-            Scanner sc = new Scanner(System.in);
-            int auctionHouseNum = sc.nextInt();
+            if(listOfAuctionHouses != null)
+            {
+                while (!listOfAuctionHouses.isEmpty())
+                {
+                    listOfAuctionHouses = requestListOfAuctionHouses(outAuctionCen, inAuctionCen);
+                    printListOfAuctionHouses(listOfAuctionHouses);
 
-            joinAuctionHouse(listOfAuctionHouses, auctionHouseNum);
-
-        } catch (ClassNotFoundException e)
+                    System.out.println("Which auction house would you like to join? Or type Exit to quit");
+                    Scanner sc = new Scanner(System.in);
+                    String input = sc.next();
+                    if(input.equals("Exit"))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        int auctionHouseNum = Integer.parseInt(input);
+                        joinAuctionHouse(listOfAuctionHouses, auctionHouseNum);
+                    }
+                }
+            }
+        }
+        catch (ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -200,19 +214,12 @@ public class Agent
     {
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
         try
-        (
-                Socket auctionHouseSocket = new Socket(auctionHouse.getHostName(), auctionHouse.getHouseSocket());
-                ObjectOutputStream outAuctionHouse = new ObjectOutputStream(auctionHouseSocket.getOutputStream());
-                ObjectInputStream inAuctionHouse = new ObjectInputStream(auctionHouseSocket.getInputStream());
-        )
         {
+            setCurrentAuctionHouseStreams(auctionHouse);
 
-            String requestForAuctionItems = "List";
-            outAuctionHouse.writeObject(requestForAuctionItems);
-            outAuctionHouse.flush();
-
-            ArrayList<AuctionItem> listOfAuctionItems = (ArrayList<AuctionItem>) inAuctionHouse.readObject();
-            printListOfAuctionItems(listOfAuctionItems);
+            ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
+            if(listOfAuctionItems != null)
+                printListOfAuctionItems(listOfAuctionItems);
 
             System.out.println("Which auction item would you like to bid on?");
             Scanner sc = new Scanner(System.in);
@@ -225,18 +232,106 @@ public class Agent
             Bid agentBidOnItem = new Bid(bankAccount.getKey(), itemBiddingOn);
             agentBidOnItem.setBidAmount(bidAmount);
 
-            outAuctionHouse.writeObject(agentBidOnItem);
+            outCurrentAuctionHouse.writeObject(agentBidOnItem);
+            agentBidOnItem = (Bid)inCurrentAuctionHouse.readObject();
+            while(!agentBidOnItem.getBidStatus().equals("Over"))
+            {
+                System.out.println("Current Balance: ");
+                inquireBankBalance();
+
+                System.out.println("Current highest bid on " + itemBiddingOn.getName() + " : " + itemBiddingOn.getCurrentBid());
+
+                System.out.println("How much would you like to bid? Or type Exit to stop bidding on " + itemBiddingOn.getName());
+                String bidInput = sc.next();
+                if(bidInput.equals("Exit"))
+                    return;
+                else
+                {
+                    bidAmount = Integer.parseInt(bidInput);
+                    if (bidAmount < itemBiddingOn.getCurrentBid())
+                    {
+                        System.out.println("Please enter a higher bid");
+                    } else
+                    {
+                        agentBidOnItem.setBidAmount(bidAmount);
+                        outCurrentAuctionHouse.writeObject(agentBidOnItem);
+                    }
+                }
+            }
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
         }
     }
 
-    private void inquireBankBalance(ObjectInputStream bankIn, ObjectOutputStream bankOut)
+    public void setCurrentAuctionHouseStreams(Registration auctionHouse)
+    {
+        try
+        {
+            Socket auctionHouseSocket = new Socket(auctionHouse.getHostName(), auctionHouse.getHouseSocket());
+            outCurrentAuctionHouse = new ObjectOutputStream(auctionHouseSocket.getOutputStream());
+            inCurrentAuctionHouse = new ObjectInputStream(auctionHouseSocket.getInputStream());
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<AuctionItem> requestListOfAuctionItems()
+    {
+        try
+        {
+            String requestForAuctionItems = "List";
+            outCurrentAuctionHouse.writeObject(requestForAuctionItems);
+            outCurrentAuctionHouse.flush();
+
+            ArrayList<AuctionItem> listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
+            return listOfAuctionItems;
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void inquireBankBalance()
             throws IOException, ClassNotFoundException
     {
-        bankOut.writeObject("Inquire");
-        bankOut.writeObject(bankAccount.getKey());
+        outBank.writeObject("Inquire");
+        outBank.writeObject(bankAccount.getKey());
 
-        String balance = (String) bankIn.readObject();
+        String balance = (String) inBank.readObject();
         System.out.println(balance + "\n");
+    }
+
+    private ArrayList<Registration> requestListOfAuctionHouses(ObjectOutputStream out, ObjectInputStream in)
+    {
+        try
+        {
+            String requestForAuctionHouses = "AuctionHouses";
+            out.writeObject(requestForAuctionHouses);
+            out.flush();
+
+            ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)in.readObject();
+            return listOfAuctionHouses;
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     private void printListOfAuctionItems(ArrayList<AuctionItem> auctionItems)
