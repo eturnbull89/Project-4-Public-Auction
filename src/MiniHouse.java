@@ -144,7 +144,8 @@ class MiniHouse extends Thread
         int itemIndex = item.getItemId();
 
         //If the agents bid amount is greater then the current bid create a new hold.
-        if(items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
+        if(items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount() &&
+                !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey()))
         {
 
             //Create a transaction to pass to auction central.
