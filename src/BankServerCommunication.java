@@ -27,13 +27,15 @@ public class BankServerCommunication implements Runnable
     {
         this.out = out;
         this.in = in;
+
         if(out == null && in == null)   //an ugly indicator that this is an agent thread
         {
             try
             {
                 this.out = new ObjectOutputStream(client.getOutputStream());    //create new streams for each agent thread, without this
                 this.in = new ObjectInputStream(client.getInputStream());       //agents will get stuck when the bank servers input stream is already in use
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 e.printStackTrace();
             }
@@ -61,19 +63,19 @@ public class BankServerCommunication implements Runnable
             while (true)
             {
                 out.flush();
-                System.out.println("Trying to read incoming object");
+                System.out.println("Waiting for a incoming object");
                 inObj = in.readObject();
-                System.out.println("Read the object");
+                System.out.println("Success");
 
                 if (inObj instanceof UserAccount)
                 {
                     UserAccount acct = (UserAccount) inObj;
-                    System.out.println(acct.getAccountName());
+                    System.out.println(acct.getAccountName()); //Test
                     bank.createNewAccount(acct.getAccountName());
 
                     AcctKey userKey = new AcctKey(bank.getBankKey(acct.getAccountName()), bank.getAccount(bank.getBankKey(acct.getAccountName())).getAccountNumber(),
                             bank.getAccount(bank.getBankKey(acct.getAccountName())).getBalance());
-                    System.out.println(userKey.getKey() + "   " + userKey.getAccountNumber());
+                    System.out.println(userKey.getKey() + "   " + userKey.getAccountNumber()); //Test
 
                     out.writeObject(userKey);
                 }
@@ -81,13 +83,18 @@ public class BankServerCommunication implements Runnable
                 {
                     Transaction newTrans = (Transaction) inObj;
 
+                    System.out.println("Auction Central Bank Key: ");
+                    System.out.println(newTrans.bankKey);
+
                     if (newTrans.request == -1) //Place amount in hold
                     {
                         out.writeObject(bank.getAccount(newTrans.bankKey).setHoldBalance(newTrans.amount));
-                    } else if (newTrans.request == 1) //Release the funds in hold back to user's account
+                    }
+                    else if (newTrans.request == 1) //Release the funds in hold back to user's account
                     {
                         out.writeObject(bank.getAccount(newTrans.bankKey).clearHold(newTrans.amount));
-                    } else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
+                    }
+                    else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
                     {
                         out.writeObject(bank.getAccount(newTrans.bankKey).deductHoldAmount(newTrans.amount));
                     }
@@ -102,6 +109,23 @@ public class BankServerCommunication implements Runnable
                         Integer key = (Integer) inObj;
 
                         out.writeObject(bank.getAccount(key).inquiry());
+                    }
+                }
+                else if(inObj instanceof Integer)
+                {
+                    Integer key = (Integer) inObj;
+
+                    inObj = in.readObject();
+
+                    Integer bid = (Integer) inObj;
+
+                    if(bank.getAccount(key).getBalance() > bid)
+                    {
+                        out.writeObject(true);
+                    }
+                    else
+                    {
+                        out.writeObject(false);
                     }
                 }
             }

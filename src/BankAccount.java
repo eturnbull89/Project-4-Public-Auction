@@ -88,6 +88,7 @@ public class BankAccount extends Account implements Serializable
     {
         generatebankKey();
     }
+
     /**
      * setHoldBalance: Takes in a amount and sets the account's fundsInHold to that amount and deducts that amount from
      * the account's balance.

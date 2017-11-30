@@ -239,6 +239,8 @@ public class Agent
             System.out.println("How much would you like to bid?");
             int bidAmount = sc.nextInt();
             Bid agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
+
+            //Ask the bank what the available balance is
             agentBidOnItem.setBidAmount(bidAmount);
 
             outCurrentAuctionHouse.writeObject(agentBidOnItem);

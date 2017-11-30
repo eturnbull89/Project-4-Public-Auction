@@ -23,7 +23,8 @@ public class AuctionCentralServer
     public static void main(String args[]){
         int numOfArgs = 3;
 
-        if(args.length != numOfArgs){
+        if(args.length != numOfArgs)
+        {
             System.out.println("incorrect number of arguments");
             System.exit(-1);
         }
