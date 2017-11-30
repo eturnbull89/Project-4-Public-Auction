@@ -233,6 +233,10 @@ class MiniHouse extends Thread
                     e.printStackTrace();
                 }
 
+                AuctionItem higherBidItem = items.get(agentBid.getItemBiddingOn().getItemId());
+
+                agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
+
                 //Set the bid status to pass.
                 agentBid.setBidStatus("pass");
             }
