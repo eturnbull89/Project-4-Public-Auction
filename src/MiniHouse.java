@@ -74,7 +74,7 @@ class MiniHouse extends Thread
                 {
                     //Create a bid to pass back to the agent.
                     Bid passedBid = bidProtocol(centralIn, centralOut, (Bid) passed);
-
+                    System.out.println("Current bid passing back to Agent " + passedBid.getItemBiddingOn().getCurrentBid());
                     System.out.println("Bid protocol finished");
 
                     //Write the created bid back to the agent.

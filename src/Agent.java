@@ -31,6 +31,8 @@ public class Agent
 
     /**
      *
+     *
+     *
      */
 
     public static void main(String[] args) throws IOException, UnknownObjectException, ClassNotFoundException
@@ -121,7 +123,7 @@ public class Agent
     {
         Scanner sc = new Scanner(System.in);
         String input = "";
-        while(!input.equals("Exit"))
+        while(!input.toLowerCase().equals("exit"))
         {
             System.out.println("\nMain Menu");
             System.out.println("Please enter the key corresponding to what you want to do\n" +
@@ -137,11 +139,10 @@ public class Agent
             {
                 inquireBankBalance();
             }
-            else if(!input.equals("Exit"))
+            else if(!input.toLowerCase().equals("exit"))
             {
                 System.out.println("Please enter a valid input.");
             }
-
         }
     }
 
@@ -149,6 +150,7 @@ public class Agent
      * askAcForAh (ask auction central for auction houses): this method will communicate with the auction central over a
      * socket to get the list of auction houses. once the auction central returns the list of auction houses, we will
      * ask the agent which house they are wanting to join, we will then join that house to start bidding on items.
+     *
      */
     private void askAcForAh() throws UnknownObjectException, IOException
     {
@@ -168,14 +170,25 @@ public class Agent
                     System.out.println("Which auction house would you like to join? Or type Exit to quit");
                     Scanner sc = new Scanner(System.in);
                     String input = sc.next();
-                    if(input.equals("Exit"))
+                    if(input.toLowerCase().equals("exit"))
                     {
                         return;
                     }
+                    else if(isNumeric(input))
+                    {
+                        int auctionHouseNum = Integer.parseInt(input)-1;
+                        if(auctionHouseNum < listOfAuctionHouses.size())
+                        {
+                            joinAuctionHouse(listOfAuctionHouses, auctionHouseNum);
+                        }
+                        else
+                        {
+                            System.out.println("Please enter a valid auction house number");
+                        }
+                    }
                     else
                     {
-                        int auctionHouseNum = Integer.parseInt(input);
-                        joinAuctionHouse(listOfAuctionHouses, auctionHouseNum);
+                        System.out.println("Please enter a valid input");
                     }
                 }
             }
@@ -196,7 +209,7 @@ public class Agent
     private void joinAuctionHouse(ArrayList<Registration> listOfAuctionHouses, int auctionHouseNum)
             throws IOException, ClassNotFoundException
     {
-        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
+        Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum);
         setCurrentAuctionHouseStreams(auctionHouse);
 
         ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
@@ -209,14 +222,25 @@ public class Agent
 
             Scanner sc = new Scanner(System.in);
             String input = sc.next();
-            if(input.equals("Exit"))
+            if(input.toLowerCase().equals("exit"))
                 return;
-            else
+            else if(isNumeric(input))
             {
                 int itemNumber = Integer.parseInt(input) - 1;
-                AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
+                if(itemNumber < listOfAuctionItems.size())
+                {
+                    AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
 
-                bidOnAuctionItem(itemBiddingOn, auctionHouse.getHouseName(), itemNumber);
+                    bidOnAuctionItem(itemBiddingOn, auctionHouse.getHouseName(), itemNumber);
+                }
+                else
+                {
+                    System.out.println("Enter a valid number.");
+                }
+            }
+            else
+            {
+                System.out.println("Enter a valid input.");
             }
         }
     }
@@ -272,6 +296,7 @@ public class Agent
                     if(!checkBidWithBank(bidAmount))
                     {
                         System.out.println("You do not have those funds available, enter a lower bid.");
+                        //TODO write AuctionHouse bad bid, read in current highest bid afterwards
                         continue;
                     }
 
@@ -430,7 +455,7 @@ public class Agent
         for(AuctionItem ai : auctionItems)
         {
             counter++;
-            System.out.println(counter + ". " + ai.getName() + "  highest bid: " + ai.getCurrentBid());
+            System.out.println(counter + ". " + ai.getName());
         }
     }
 
