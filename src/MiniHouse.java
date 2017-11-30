@@ -3,6 +3,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 class MiniHouse extends Thread
 {
@@ -79,6 +81,11 @@ class MiniHouse extends Thread
                     outFromHouse.writeObject(passedBid);
 
                     System.out.println("Passing back the bid");
+
+                    if(passedBid.getBidStatus().equals("acceptance"))
+                    {
+                       countdown(passedBid, outFromHouse);
+                    }
 
                     //Implement a timer here if the bid was accepted.
                 }
@@ -259,5 +266,34 @@ class MiniHouse extends Thread
         }
 
         return agentBid;
+    }
+
+    private void countdown(Bid agentBid, ObjectOutputStream toAgent)
+    {
+        Timer bidTimer = new Timer();
+
+        AuctionItem item = items.get(agentBid.getItemBiddingOn().getItemId());
+
+        bidTimer.schedule(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                if(agentBid.getBidAmount() == item.getCurrentBid())
+                {
+                    agentBid.setBidStatus("Over");
+
+                    try
+                    {
+                        toAgent.writeObject(agentBid);
+                        System.out.println("wrote to winner");
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, 30*1000);
     }
 }
