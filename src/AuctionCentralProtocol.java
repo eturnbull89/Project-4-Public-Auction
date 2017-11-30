@@ -116,10 +116,8 @@ public class AuctionCentralProtocol
 
                     AuctionCentralServer.debug("Bidkey " + ClientBid.bidKey + " to bank key " + key);
 
-
                     Transaction trans = new Transaction(key, ClientBid.amount, ClientBid.request);
-
-
+                    
                     AuctionCentralServer.debug("sending transaction to bank");
 
                     Boolean result = bankConnection.RequestFromBank(trans);

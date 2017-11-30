@@ -239,6 +239,8 @@ public class Agent
             System.out.println("How much would you like to bid?");
             int bidAmount = sc.nextInt();
             Bid agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
+
+            //Ask the bank what the available balance is
             agentBidOnItem.setBidAmount(bidAmount);
 
             outCurrentAuctionHouse.writeObject(agentBidOnItem);
@@ -246,6 +248,8 @@ public class Agent
 
             while (!agentBidOnItem.getBidStatus().equals("Over"))
             {
+                //TODO can't bid again if already highest bidder, auction house may need to check every bid to see if this agent is already winning
+                
                 //itemBiddingOn = getUpdatedItem(itemNumber); //get the new list of items after every bid
                 //int highestBid = itemBiddingOn.getCurrentBid();
                 int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
@@ -264,9 +268,20 @@ public class Agent
                 {
                     System.out.println("Is numeric");
                     bidAmount = Integer.parseInt(bidInput);
+
+                    if(!checkBidWithBank(bidAmount))
+                    {
+                        System.out.println("You do not have those funds available, enter a lower bid.");
+                        continue;
+                    }
+
                     if (bidAmount < highestBid)
                     {
                         System.out.println("Please enter a higher bid");
+                    }
+                    else if(bidAmount > bankAccount.getBalance())
+                    {
+                        System.out.println("You do not have the available funds for that bid");
                     }
                     else
                     {
@@ -289,6 +304,26 @@ public class Agent
         {
             e.printStackTrace();
         }
+    }
+
+    private boolean checkBidWithBank(int bid)
+    {
+        try
+        {
+            Integer myBid = bid;
+            outBank.writeObject(bankAccount.getKey());
+            outBank.writeObject(myBid);
+            return (Boolean) inBank.readObject();
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private AuctionItem getUpdatedItem(int itemNumber)
