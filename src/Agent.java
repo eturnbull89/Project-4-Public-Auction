@@ -272,8 +272,6 @@ public class Agent
 
             while (!agentBidOnItem.getBidStatus().equals("Over"))
             {
-                //TODO can't bid again if already highest bidder, auction house may need to check every bid to see if this agent is already winning
-                
                 //itemBiddingOn = getUpdatedItem(itemNumber); //get the new list of items after every bid
                 //int highestBid = itemBiddingOn.getCurrentBid();
                 int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
@@ -290,7 +288,6 @@ public class Agent
                 }
                 else if(isNumeric(bidInput))
                 {
-                    System.out.println("Is numeric");
                     bidAmount = Integer.parseInt(bidInput);
 
                     if(!checkBidWithBank(bidAmount))
@@ -313,6 +310,11 @@ public class Agent
                         agentBidOnItem.setBidAmount(bidAmount);
                         outCurrentAuctionHouse.writeObject(agentBidOnItem);
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
+
+                        if(agentBidOnItem.getBidStatus().equals("pass"))
+                        {
+                            System.out.println("Your bid was passed.");
+                        }
                     }
                 }
                 else
