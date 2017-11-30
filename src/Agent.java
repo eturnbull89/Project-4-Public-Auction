@@ -216,6 +216,8 @@ public class Agent
 
         while(!listOfAuctionItems.isEmpty())
         {
+            listOfAuctionItems = requestListOfAuctionItems();       //get the new list of items whenever we exit out of an item
+
             System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
             printListOfAuctionItems(listOfAuctionItems);
             System.out.println("Which auction item would you like to bid on? Or type Exit to leave auction house");
@@ -272,8 +274,7 @@ public class Agent
 
             while (!agentBidOnItem.getBidStatus().equals("Over"))
             {
-                //itemBiddingOn = getUpdatedItem(itemNumber); //get the new list of items after every bid
-                //int highestBid = itemBiddingOn.getCurrentBid();
+
                 int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
 
                 inquireBankBalance();
@@ -374,7 +375,7 @@ public class Agent
     {
         try
         {
-            String requestForAuctionItems = "List";
+            String requestForAuctionItems = "list";
             outCurrentAuctionHouse.writeObject(requestForAuctionItems);
             outCurrentAuctionHouse.flush();
 
