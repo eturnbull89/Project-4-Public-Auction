@@ -143,9 +143,11 @@ class MiniHouse extends Thread
         //Idex of the item based on the items id.
         int itemIndex = item.getItemId();
 
+        boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
+                                 !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
+
         //If the agents bid amount is greater then the current bid create a new hold.
-        if(items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount() &&
-                !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey()))
+        if (items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount() && previousBidder)
         {
 
             //Create a transaction to pass to auction central.
@@ -173,7 +175,7 @@ class MiniHouse extends Thread
             //If we were able to place a hold on the agents account and the currentBid is still less then the
             //agents bid. I did this extra check to make sure that the agents bid was still the highest bid after
             //the possible time delay waiting for central to transmit its hold confirmation not sure if it is needed.
-            if(holdConfirm && items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
+            if (holdConfirm && items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
             {
                 //Transaction that will be used to release the previous agents funds.
                 AuctionTransaction release = null;
@@ -199,7 +201,7 @@ class MiniHouse extends Thread
                     //Update the highestBidderKey to the agents key
                     items.get(itemIndex).setHighestBidKey(agentKey);
 
-                    if(items.get(itemIndex).getPreviousBidderKey() != null)
+                    if (items.get(itemIndex).getPreviousBidderKey() != null)
                     {
                         //Set release to a new transaction.
                         release = new AuctionTransaction(items.get(itemIndex).getPreviousBidderKey(),
@@ -209,7 +211,7 @@ class MiniHouse extends Thread
 
                 try
                 {
-                    if(release != null)
+                    if (release != null)
                     {
                         //Send the Transaction to auction central.
                         toCentral.writeObject(release);
@@ -226,7 +228,7 @@ class MiniHouse extends Thread
             }
 
             //If we were able to confirm a hold but the current bid changed in the time it took to get a confirmation
-            else if(holdConfirm && items.get(itemIndex).getCurrentBid() > agentBid.getBidAmount())
+            else if (holdConfirm && items.get(itemIndex).getCurrentBid() > agentBid.getBidAmount())
             {
                 //Create a new transaction to release the agents previous hold.
                 Transaction releaseAgent = new Transaction(agentKey, bidAmount, 1);
