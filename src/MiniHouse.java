@@ -247,6 +247,10 @@ class MiniHouse extends Thread
         //The bid amount was lower or equal to the current bid amount.
         else
         {
+            AuctionItem higherBidItem = items.get(agentBid.getItemBiddingOn().getItemId());
+
+            agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
+
             agentBid.setBidStatus("pass");
         }
 
