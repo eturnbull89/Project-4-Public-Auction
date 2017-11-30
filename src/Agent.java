@@ -197,17 +197,16 @@ public class Agent
             throws IOException, ClassNotFoundException
     {
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum - 1);
-
-        System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
         setCurrentAuctionHouseStreams(auctionHouse);
 
         ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
-        if(listOfAuctionItems != null)
-            printListOfAuctionItems(listOfAuctionItems);
 
         while(!listOfAuctionItems.isEmpty())
         {
+            System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
+            printListOfAuctionItems(listOfAuctionItems);
             System.out.println("Which auction item would you like to bid on? Or type Exit to leave auction house");
+
             Scanner sc = new Scanner(System.in);
             String input = sc.next();
             if(input.equals("Exit"))
