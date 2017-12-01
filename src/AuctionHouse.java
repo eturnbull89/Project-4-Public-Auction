@@ -3,6 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class AuctionHouse
 {
@@ -186,6 +187,8 @@ public class AuctionHouse
         //The auction houses key, assigned by auction central and held in houseReg variable.
         int key = houseReg.getAuctionKey();
 
+        Random random = new Random(1000);
+
         //Create 3 new Auction items and added them to the item list.
         for(int i = 0; i < 3; i++)
         {
@@ -196,7 +199,7 @@ public class AuctionHouse
             int minBid = Integer.parseInt(itemList.get(listIndex+1));
 
             //Create a new auction item
-            AuctionItem listing = new AuctionItem(houseId, itemName, i, minBid, key);
+            AuctionItem listing = new AuctionItem(houseId, itemName, i, minBid, key, random.nextInt(1000));
 
             //Add the auction item to the house list
             houseList.add(i, listing);
