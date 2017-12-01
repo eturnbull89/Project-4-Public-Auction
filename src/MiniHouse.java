@@ -11,9 +11,6 @@ class MiniHouse extends Thread
     //Socket used to communicate with an agent.
     private Socket agentSocket = null;
 
-    //Socket used to communicate with auction central.
-    private Socket centralSocket = null;
-
     private ObjectInputStream centralIn;
 
     private ObjectOutputStream centralOut;
@@ -25,14 +22,11 @@ class MiniHouse extends Thread
     private final Integer houseKey;
 
     //Constructor for a mini auction house.
-    MiniHouse(Socket agent, Socket central, ArrayList<AuctionItem> items, Integer houseKey, ObjectOutputStream out,
+    MiniHouse(Socket agent, ArrayList<AuctionItem> items, Integer houseKey, ObjectOutputStream out,
               ObjectInputStream in)
     {
         //set the agent socket variable.
         this.agentSocket = agent;
-
-        //Set the central socket variable.
-        this.centralSocket = central;
 
         //Set the items variable.
         this.items = items;
@@ -99,22 +93,22 @@ class MiniHouse extends Thread
                     System.out.println(message);
 
                     //If the string is equal to exit, set the listening variable to false.
-                    if(message.equals("exit"))
+                    switch (message)
                     {
-                        listening = false;
-                    }
+                        case "exit":
+                            listening = false;
+                            break;
 
-                    //If the string is equal to list return the item list to the agent.
-                    else if(message.equals("list"))
-                    {
-                        System.out.println(items.get(0).getCurrentBid());
-                        outFromHouse.writeObject(items);
-                    }
+                        //If the string is equal to list return the item list to the agent.
+                        case "list":
+                            System.out.println(items.get(0).getCurrentBid());
+                            outFromHouse.writeObject(items);
+                            break;
 
-                    //If the message is something else return an error message for agent to process.
-                    else
-                    {
-                        outFromHouse.writeObject("error");
+                        //If the message is something else return an error message for agent to process.
+                        default:
+                            outFromHouse.writeObject("error");
+                            break;
                     }
 
                 }
