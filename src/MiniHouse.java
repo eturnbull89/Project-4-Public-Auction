@@ -254,7 +254,7 @@ class MiniHouse extends Thread
                         e.printStackTrace();
                     }
 
-                    AuctionItem higherBidItem = items.get(agentBid.getItemBiddingOn().getItemId());
+                    AuctionItem higherBidItem = items.get(itemIndex);
 
                     agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
 
@@ -272,7 +272,7 @@ class MiniHouse extends Thread
             //The bid amount was lower or equal to the current bid amount.
             else
             {
-                AuctionItem higherBidItem = items.get(agentBid.getItemBiddingOn().getItemId());
+                AuctionItem higherBidItem = items.get(itemIndex);
 
                 agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
 
