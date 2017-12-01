@@ -3,9 +3,7 @@ import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.activation.UnknownObjectException;
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /**
  * =============================================
@@ -327,10 +325,10 @@ public class Agent
 
                         //read in the bid back from the auction house, NOTE: only do this after sending auction house a bid
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
-                        System.out.println("Highest bid on item from bid from Auction House: " +
-                                agentBidOnItem.getItemBiddingOn().getCurrentBid());
+                        System.out.println("Bid status: " +
+                                agentBidOnItem.getBidStatus());
 
-                        if(agentBidOnItem.getBidStatus().equals("pass"));
+                        if(agentBidOnItem.getBidStatus().toLowerCase().equals("pass"));
                         {
                             System.out.println("Your bid was passed.");
                             agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getCurrentBid());
@@ -346,6 +344,7 @@ public class Agent
                 updateListOfAuctionItems();
             }
             System.out.println("Bid was over for item");
+            removeItem(itemBiddingOn.getName());
         }
         catch(IOException e)
         {
@@ -433,6 +432,17 @@ public class Agent
             }
         }
         return null;
+    }
+
+    private void removeItem(String itemName)
+    {
+        List<AuctionItem> toRemove = new ArrayList<>();
+        for(AuctionItem ai : listOfAuctionItems)
+        {
+            if(ai.getName().equals(itemName))
+                toRemove.add(ai);
+        }
+        listOfAuctionItems.removeAll(toRemove);
     }
 
     private boolean listContainsItem(int itemId, ArrayList<AuctionItem> items)
