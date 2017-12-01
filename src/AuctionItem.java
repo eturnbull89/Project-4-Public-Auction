@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Random;
 
 class AuctionItem implements Serializable
 {
@@ -10,6 +11,8 @@ class AuctionItem implements Serializable
 
     //Used to id the item in question, is the items index in its list
     private final int itemId;
+
+    private final int itemSerialNum;
 
     //The initial minimum bid amount, this is initially given in the sale list.
     private final int minimumBid;
@@ -40,7 +43,7 @@ class AuctionItem implements Serializable
     //the value of houseId passed to it, the name field to the itemName string passed to it, etc. It also sets the
     //value of current bid to zero to indicate no bids are currently on it.
     //***********************************
-    AuctionItem(int houseId, String itemName, int id, int minimumBid, Integer key)
+    AuctionItem(int houseId, String itemName, int id, int minimumBid, Integer key, int serial)
     {
         //Set the auctionHouseId variable.
         this.auctionHouseId = houseId;
@@ -59,6 +62,8 @@ class AuctionItem implements Serializable
 
         //Set the current bid amount to zero.
         this.currentBid = 0;
+
+        this.itemSerialNum = serial;
     }
 
     //***********************************
@@ -179,5 +184,10 @@ class AuctionItem implements Serializable
     int getPreviousBid()
     {
         return this.previousBid;
+    }
+
+    int getItemSerialNum()
+    {
+        return this.itemSerialNum;
     }
 }
