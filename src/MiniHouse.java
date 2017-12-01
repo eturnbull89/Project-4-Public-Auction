@@ -92,19 +92,9 @@ class MiniHouse extends Thread
 
                 else if(passed instanceof itemEnquire)
                 {
-                    int id = ((itemEnquire) passed).getId();
+                    boolean inList = itemExists(((itemEnquire) passed).getSerialNumber());
 
-                    if(id > items.size())
-                    {
-                        outFromHouse.writeObject(false);
-                    }
-
-                    else
-                    {
-                        int itemSerial = items.get(id).getItemSerialNum();
-
-                        outFromHouse.writeObject(itemSerial == ((itemEnquire) passed).getSerialNumber());
-                    }
+                    outFromHouse.writeObject(inList);
                 }
 
                 //If the object is a string.
@@ -154,22 +144,21 @@ class MiniHouse extends Thread
         //The item the agent is bidding on.
         AuctionItem item = agentBid.getItemBiddingOn();
 
-        //Index of the item based on the items id.
-        int itemIndex = item.getItemId();
-
-        boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
-                                 !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
-
-        System.out.println("AH Items List SN: " + items.get(itemIndex).getItemSerialNum() +
-                            "\nBid item SN: " + item.getItemSerialNum());
-
-        boolean stillListed = items.get(itemIndex).getItemSerialNum() == item.getItemSerialNum();
-
-        System.out.println("item being bid on: " +item.getName());
-        System.out.println(items.get(itemIndex).getName()+" is still listed: "+ stillListed);
+        boolean stillListed = itemExists(item.getItemSerialNum());
 
         if(stillListed)
         {
+            //Index of the item based on the items id.
+            int itemIndex = findIndex(item.getItemSerialNum());
+
+            boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
+                    !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
+
+            System.out.println("AH Items List SN: " + items.get(itemIndex).getItemSerialNum() +
+                    "\nBid item SN: " + item.getItemSerialNum());
+
+            System.out.println("item being bid on: " +item.getName());
+
             //If the agents bid amount is greater then the current bid create a new hold.
             if (items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount() && previousBidder)
             {
@@ -304,7 +293,9 @@ class MiniHouse extends Thread
     {
         Timer bidTimer = new Timer();
 
-        AuctionItem item = items.get(agentBid.getItemBiddingOn().getItemId());
+        int itemIndex = findIndex(agentBid.getItemBiddingOn().getItemSerialNum());
+
+        AuctionItem item = items.get(itemIndex);
 
         bidTimer.schedule(new TimerTask()
         {
@@ -313,7 +304,7 @@ class MiniHouse extends Thread
             {
                 if(agentBid.getBidAmount() == item.getCurrentBid())
                 {
-                    items.remove(items.get(agentBid.getItemBiddingOn().getItemId()));
+                    items.remove(itemIndex);
 
                     System.out.println("wrote to winner, updated list:");
                     printArrayList(items);
@@ -332,5 +323,32 @@ class MiniHouse extends Thread
             System.out.print(", items serial number = " + item.getItemSerialNum());
             System.out.println(", items id number = "+ item.getItemId());
         }
+    }
+
+    private boolean itemExists(int serialNumber)
+    {
+
+        for (AuctionItem item : items)
+        {
+            if (item.getItemSerialNum() == serialNumber)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private int findIndex(int serialNumber)
+    {
+        for(int i = 0; i < items.size(); i++)
+        {
+            if(items.get(i).getItemSerialNum() == serialNumber)
+            {
+                return i;
+            }
+        }
+
+        return 0;
     }
 }
