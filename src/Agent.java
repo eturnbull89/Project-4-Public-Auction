@@ -30,7 +30,8 @@ public class Agent
     private ObjectInputStream inCurrentAuctionHouse;
     private ObjectOutputStream outCurrentAuctionHouse;
 
-    private ArrayList<Bid> currentBids;
+    private ArrayList<Bid> currentBids = new ArrayList<>();
+    private ArrayList<AuctionItem> listOfAuctionItems;
 
     /**
      *
@@ -220,11 +221,11 @@ public class Agent
         Registration auctionHouse = listOfAuctionHouses.get(auctionHouseNum);
         setCurrentAuctionHouseStreams(auctionHouse);
 
-        ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
+        updateListOfAuctionItems();
 
         while(!listOfAuctionItems.isEmpty())
         {
-            listOfAuctionItems = requestListOfAuctionItems();       //get the new list of items whenever we exit out of an item
+            updateListOfAuctionItems();       //get the new list of items whenever we exit out of an item
 
             System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName());
             printListOfAuctionItems(listOfAuctionItems);
@@ -241,7 +242,7 @@ public class Agent
                 {
                     AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
 
-                    bidOnAuctionItem(itemBiddingOn, auctionHouse.getHouseName(), itemNumber, listOfAuctionItems);
+                    bidOnAuctionItem(itemBiddingOn, auctionHouse.getHouseName(), itemNumber);
                 }
                 else
                 {
@@ -260,22 +261,18 @@ public class Agent
      * @param itemBiddingOn
      * @param auctionHouseName
      */
-    private void bidOnAuctionItem(AuctionItem itemBiddingOn, String auctionHouseName, int itemNumber, ArrayList<AuctionItem> listOfItems)
+    private void bidOnAuctionItem(AuctionItem itemBiddingOn, String auctionHouseName, int itemNumber)
     {
         try
         {
             Scanner sc = new Scanner(System.in);
 
-
             System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouseName + "\\" + itemBiddingOn.getName());
             System.out.println("Minimum bid: " + itemBiddingOn.getMinimumBid());
 
-            //if there is already a bid on this item, don't make a new bid object
-            Bid agentBidOnItem = getBidOnSameItem(itemBiddingOn.getName());
-            if(agentBidOnItem == null)
-                 agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
+            Bid agentBidOnItem = checkBid(itemBiddingOn);
 
-            while (listOfItems.contains(itemBiddingOn))
+            while(!agentBidOnItem.getBidStatus().toLowerCase().equals("over"))
             {
                 //set highest bid to the current bid of the item we're bidding on in the bid object
                 int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
@@ -315,10 +312,10 @@ public class Agent
 
                         //before we make a bit, request the list of auction items
                         System.out.println("requesting items before a bid\n\n");
-                        listOfItems = requestListOfAuctionItems();
+                        updateListOfAuctionItems();
 
                         //double check the list of auction items to see if our item is in the list
-                        if(!listContainsItem(itemBiddingOn.getItemId(), listOfItems))
+                        if(!listContainsItem(itemBiddingOn.getItemId(), listOfAuctionItems))
                         {
                             System.out.println("No\n\n");
                             return;                         //return out of bidding if the item is no longer in the list
@@ -330,10 +327,13 @@ public class Agent
 
                         //read in the bid back from the auction house, NOTE: only do this after sending auction house a bid
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
+                        System.out.println("Highest bid on item from bid from Auction House: " +
+                                agentBidOnItem.getItemBiddingOn().getCurrentBid());
 
-                        if(agentBidOnItem.getBidStatus().equals("pass"))
+                        if(agentBidOnItem.getBidStatus().equals("pass"));
                         {
                             System.out.println("Your bid was passed.");
+                            agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getCurrentBid());
                         }
                     }
                 }
@@ -343,7 +343,7 @@ public class Agent
                 }
 
                 //after every iteration of the while loop request the list of auction items to ensure we have the right one
-                listOfItems = requestListOfAuctionItems();
+                updateListOfAuctionItems();
             }
             System.out.println("Bid was over for item");
         }
@@ -357,12 +357,80 @@ public class Agent
         }
     }
 
+    private Bid checkBid(AuctionItem itemBiddingOn)
+    {
+        Bid agentBidOnItem;
+
+        if(currentBids.isEmpty())
+        {
+            System.out.println("No bids, creating new bid");
+            agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
+            currentBids.add(agentBidOnItem);
+        }
+        else if(getBidOnSameItem(itemBiddingOn.getName()) != null)
+        {
+            System.out.println("Bid already exists");
+            agentBidOnItem = getBidOnSameItem(itemBiddingOn.getName());
+        }
+        else
+        {
+            System.out.println("New bid!");
+            agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
+            currentBids.add(agentBidOnItem);
+        }
+        return agentBidOnItem;
+    }
+
+    /**
+     * requestListOfAuctionItems:
+     * send a string over the auction house out stream. read in the input from auction house,
+     * set the input as the list of auction items.
+     * @return the list of auction items in this auction house
+     */
+    private void updateListOfAuctionItems()
+    {
+
+        try
+        {
+            String requestForAuctionItems = "list";
+            outCurrentAuctionHouse.writeObject(requestForAuctionItems);
+            outCurrentAuctionHouse.flush();
+
+            listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
+            System.out.println("\nItems we get from auction house:\n");
+            printListOfAuctionItems(listOfAuctionItems);
+
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void inquireBankBalance()
+            throws IOException, ClassNotFoundException
+    {
+        outBank.writeObject("Inquire");
+        outBank.writeObject(bankAccount.getKey());
+
+        String balance = (String) inBank.readObject();
+        System.out.println(balance);
+    }
+
     private Bid getBidOnSameItem(String itemName)
     {
         for(Bid bid : currentBids)
         {
             if(bid.getItemBiddingOn().getName().equals(itemName))
+            {
+                System.out.println("Bid on item for bid that already existed: " + bid.getItemBiddingOn().getCurrentBid());
+                System.out.println("Current bid on bid for item: " + bid.getBidAmount());
                 return bid;
+            }
         }
         return null;
     }
@@ -401,58 +469,13 @@ public class Agent
 
     private AuctionItem getUpdatedItem(int itemNumber)
     {
-        ArrayList<AuctionItem> listOfAuctionItems = requestListOfAuctionItems();
+        updateListOfAuctionItems();
         if(listOfAuctionItems != null)
             printListOfAuctionItems(listOfAuctionItems);
 
         AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
 
         return itemBiddingOn;
-    }
-
-    /**
-     * requestListOfAuctionItems:
-     * send a string over the auction house out stream. read in the input from auction house,
-     * set the input as the list of auction items.
-     * @return the list of auction items in this auction house
-     */
-    private ArrayList<AuctionItem> requestListOfAuctionItems()
-    {
-        Object testObject;
-        ArrayList<AuctionItem> listOfAuctionItems = null;
-
-        try
-        {
-            String requestForAuctionItems = "list";
-            outCurrentAuctionHouse.writeObject(requestForAuctionItems);
-            outCurrentAuctionHouse.flush();
-
-            listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
-            System.out.println("\nItems we get from auction house:\n");
-            printListOfAuctionItems(listOfAuctionItems);
-
-            return listOfAuctionItems;
-
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private void inquireBankBalance()
-            throws IOException, ClassNotFoundException
-    {
-        outBank.writeObject("Inquire");
-        outBank.writeObject(bankAccount.getKey());
-
-        String balance = (String) inBank.readObject();
-        System.out.println(balance);
     }
 
     /**
