@@ -113,6 +113,7 @@ class MiniHouse extends Thread
                         //If the string is equal to list return the item list to the agent.
                         case "list":
                             outFromHouse.writeObject(items);
+                            outFromHouse.reset();
                             break;
 
                         //If the message is something else return an error message for agent to process.
@@ -310,7 +311,7 @@ class MiniHouse extends Thread
                     printArrayList(items);
                 }
             }
-        }, 15*1000);
+        }, 30*1000);
     }
 
     private void printArrayList(ArrayList<AuctionItem> ar)
