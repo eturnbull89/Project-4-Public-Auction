@@ -24,17 +24,10 @@ public class AuctionHouse
     //Confirmation object, holds registration info set by auction central.
     private Confirmation houseReg;
 
-    //Socket connection with auction central
-    private Socket centralSocket;
-
     //Int used to keep track of the list index between different auction houses
     private static int listIndex = 0;
 
     private ArrayList<AuctionItem> items;
-
-    private ObjectInputStream centralIn;
-
-    private ObjectOutputStream centralOut;
 
     public static void main(String[] args) throws IOException
     {
@@ -63,12 +56,8 @@ public class AuctionHouse
         //auction central server host name, fifth argument.
         house.centralHost = args[4];
 
-        //Commented out until it can be tested.
         //Create a server socket for this auction house.
         ServerSocket serverSocket;
-
-        //Boolean to keep the creating sockets for each agent that connects.
-        boolean listeningSocket = true;
 
         boolean registered = false;
 
@@ -86,12 +75,13 @@ public class AuctionHouse
             //Create an object input stream from auction central
             ObjectInputStream centralIn = new ObjectInputStream(centralSocket.getInputStream());
 
-            while(listeningSocket)
+            //noinspection InfiniteLoopStatement
+            while(true)
             {
                 if(!registered)
                 {
                     //Register with auction central and set houseReg field
-                    house.register(house.houseHost, house.housePort, house.centralHost, house.centralPort, centralOut,
+                    house.register(house.houseHost, house.housePort, house.centralHost, centralOut,
                                    centralIn);
 
                     //Set the house items list
@@ -103,14 +93,12 @@ public class AuctionHouse
                 Socket clientSocket = serverSocket.accept();
 
                 //Create a miniHouse object for each agent that connects to auction central
-                MiniHouse mini = new MiniHouse(clientSocket, centralSocket, house.items, house.houseReg.getAuctionKey(),
+                MiniHouse mini = new MiniHouse(clientSocket, house.items, house.houseReg.getAuctionKey(),
                                                centralOut, centralIn);
 
                 //Start the miniHouse thread for each agent.
                 mini.start();
             }
-
-            serverSocket.close();
         }
         catch (IOException e)
         {
@@ -133,7 +121,7 @@ public class AuctionHouse
     //auction central. It then closes the object input and output streams. If there were any errors it prints out
     //a message corresponding to the error.
     //***********************************
-    private void register(String houseHost, int housePort, String centralHost, int centralPort, ObjectOutputStream out,
+    private void register(String houseHost, int housePort, String centralHost, ObjectOutputStream out,
                           ObjectInputStream in) throws IOException
     {
         //Registration object that will be sent to auction central to register.

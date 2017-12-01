@@ -473,6 +473,7 @@ public class Agent
             outAuctionCen.flush();
 
             ArrayList<Registration> listOfAuctionHouses = (ArrayList<Registration>)inAuctionCen.readObject();
+
             return listOfAuctionHouses;
         }
         catch(IOException e)
