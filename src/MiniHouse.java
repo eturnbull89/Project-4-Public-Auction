@@ -69,7 +69,6 @@ class MiniHouse extends Thread
                     //Create a bid to pass back to the agent.
                     Bid passedBid = bidProtocol(centralIn, centralOut, (Bid) passed);
                     System.out.println("Current bid passing back to Agent " + passedBid.getItemBiddingOn().getCurrentBid());
-                    System.out.println("Bid protocol finished");
 
                     //Write the created bid back to the agent.
                     outFromHouse.writeObject(passedBid);
@@ -78,11 +77,9 @@ class MiniHouse extends Thread
 
                     if(passedBid.getBidStatus().equals("acceptance"))
                     {
-                       countdown(passedBid, outFromHouse);
+                       countdown(passedBid);
                        printArrayList(this.items);
                     }
-
-                    //Implement a timer here if the bid was accepted.
                 }
 
                 //If the object is a string.
@@ -90,8 +87,6 @@ class MiniHouse extends Thread
                 {
                     //Store the message in a string and set its font to lower case.
                     String message = ((String) passed).toLowerCase();
-
-                    System.out.println(message);
 
                     //If the message is something else return an error message for agent to process.
                     switch (message)
@@ -102,9 +97,6 @@ class MiniHouse extends Thread
 
                         //If the string is equal to list return the item list to the agent.
                         case "list":
-                            System.out.println(items.get(0).getCurrentBid());
-                            System.out.println("sending items to agent");
-                            printArrayList(items);
                             outFromHouse.writeObject(items);
                             break;
 
@@ -119,7 +111,7 @@ class MiniHouse extends Thread
         }
         catch (IOException | ClassNotFoundException e)
         {
-            e.printStackTrace();
+            System.out.println("Exit caused");
         }
     }
 
@@ -137,15 +129,13 @@ class MiniHouse extends Thread
         //The item the agent is bidding on.
         AuctionItem item = agentBid.getItemBiddingOn();
 
-        //Idex of the item based on the items id.
+        //Index of the item based on the items id.
         int itemIndex = item.getItemId();
 
         boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
                                  !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
 
         boolean stillListed = items.get(itemIndex).getItemSerialNum() == item.getItemSerialNum();
-
-        System.out.println(item.getName()+" is still listed = "+ stillListed);
 
         if(stillListed)
         {
@@ -167,7 +157,7 @@ class MiniHouse extends Thread
                     //Get centrals confirmation of hold.
                     holdConfirm = (Boolean) fromCentral.readObject();
 
-                    System.out.println("Recived confirmation of hold");
+                    System.out.println("Received confirmation of hold");
 
                 }
                 catch (IOException | ClassNotFoundException e)
@@ -281,7 +271,7 @@ class MiniHouse extends Thread
         return agentBid;
     }
 
-    private void countdown(Bid agentBid, ObjectOutputStream toAgent)
+    private void countdown(Bid agentBid)
     {
         Timer bidTimer = new Timer();
 
@@ -295,32 +285,23 @@ class MiniHouse extends Thread
                 if(agentBid.getBidAmount() == item.getCurrentBid())
                 {
                     items.remove(items.get(agentBid.getItemBiddingOn().getItemId()));
+
+                    System.out.println("wrote to winner, updated list:");
                     printArrayList(items);
-
-                    System.out.println("wrote to winner");
-
-//                    //agentBid.setBidStatus("Over");
-//
-//                    try
-//                    {
-//                        //toAgent.writeObject(agentBid);
-//
-//                    }
-//                    catch (IOException e)
-//                    {
-//                        e.printStackTrace();
-//                    }
                 }
             }
-        }, 5*1000);
+        }, 30*1000);
     }
 
     private void printArrayList(ArrayList<AuctionItem> ar)
     {
+        System.out.println("current items in list: ");
+
         for(AuctionItem item : ar)
         {
-            //System.out.println(item.getName()+", items serial number = " + item.getItemSerialNum()+", items id number = "
-                     //+ item.getItemId());
+            System.out.print(item.getName());
+            System.out.print(", items serial number = " + item.getItemSerialNum());
+            System.out.println(", items id number = "+ item.getItemId());
         }
     }
 }
