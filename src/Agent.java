@@ -59,6 +59,8 @@ public class Agent
         agent.registerWithBank(bankHostName, bankPortNumber);
         agent.registerWithAuctionCentral(auctionCentralHostName, auctionCenPortNumber);
         agent.pollUserInput();
+        System.out.println("Agent exiting...");
+        System.exit(1);
     }
 
     private void registerWithBank(String bankHostName, int bankPortNumber)
@@ -133,7 +135,7 @@ public class Agent
         while(!input.toLowerCase().equals("exit"))
         {
             System.out.println("\nMain Menu");
-            System.out.println("Please enter the key corresponding to what you want to do\n" +
+            System.out.println("Please enter one of the following options\n" +
                     "(1) see list of auction houses \n" +
                     "($) see current account balance\n" +
                     "(Exit) to exit");
@@ -239,7 +241,6 @@ public class Agent
                 if(itemNumber < listOfAuctionItems.size())
                 {
                     AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
-
                     bidOnAuctionItem(itemBiddingOn, auctionHouse.getHouseName(), itemNumber);
                 }
                 else
@@ -281,7 +282,12 @@ public class Agent
                 System.out.println("How much would you like to bid? Or type Exit to stop bidding on " + itemBiddingOn.getName());
                 String bidInput = sc.next();
 
-                if (bidInput.toLowerCase().equals("exit"))
+
+                if(!checkBidStillGoing(itemBiddingOn))
+                {
+                    return;
+                }
+                else if(bidInput.toLowerCase().equals("exit"))
                 {
                     return;
                 }
@@ -308,16 +314,16 @@ public class Agent
                     {
                         agentBidOnItem.setBidAmount(bidAmount);
 
-                        //before we make a bit, request the list of auction items
-                        System.out.println("requesting items before a bid\n\n");
-                        updateListOfAuctionItems();
-
-                        //double check the list of auction items to see if our item is in the list
-                        if(!listContainsItem(itemBiddingOn.getItemId(), listOfAuctionItems))
-                        {
-                            System.out.println("No\n\n");
-                            return;                         //return out of bidding if the item is no longer in the list
-                        }
+//                        //before we make a bit, request the list of auction items
+//                        System.out.println("requesting items before a bid\n\n");
+//                        updateListOfAuctionItems();
+//
+//                        //double check the list of auction items to see if our item is in the list
+//                        if(!listContainsItem(itemBiddingOn.getItemId(), listOfAuctionItems))
+//                        {
+//                            System.out.println("No\n\n");
+//                            return;                         //return out of bidding if the item is no longer in the list
+//                        }
 
                         //write our bid to the auction house
                         outCurrentAuctionHouse.writeObject(agentBidOnItem);
@@ -325,13 +331,19 @@ public class Agent
 
                         //read in the bid back from the auction house, NOTE: only do this after sending auction house a bid
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
-                        System.out.println("Bid status: " +
-                                agentBidOnItem.getBidStatus());
+                        System.out.println("Bid status: " + agentBidOnItem.getBidStatus());
 
-                        if(agentBidOnItem.getBidStatus().toLowerCase().equals("pass"));
+                        //TODO get a reject different from pass
+                        //TODO pass = already highest bidder ---- reject = too low of a bid etc.
+
+                        if(agentBidOnItem.getBidStatus().toLowerCase().equals("pass"))
                         {
                             System.out.println("Your bid was passed.");
                             agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getCurrentBid());
+                        }
+                        else if(agentBidOnItem.getBidStatus().toLowerCase().equals("acceptance"))
+                        {
+                            System.out.println("******You're currently winning the auction******");
                         }
                     }
                 }
@@ -343,7 +355,7 @@ public class Agent
                 //after every iteration of the while loop request the list of auction items to ensure we have the right one
                 updateListOfAuctionItems();
             }
-            System.out.println("Bid was over for item");
+            System.out.println("Bid over!");
             removeItem(itemBiddingOn.getName());
         }
         catch(IOException e)
@@ -359,6 +371,7 @@ public class Agent
     private Bid checkBid(AuctionItem itemBiddingOn)
     {
         Bid agentBidOnItem;
+        System.out.println("Checking bid on item: " + itemBiddingOn.getName() + " SN: " + itemBiddingOn.getItemSerialNum());
 
         if(currentBids.isEmpty())
         {
@@ -377,7 +390,26 @@ public class Agent
             agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
             currentBids.add(agentBidOnItem);
         }
+
+        System.out.println("Bid made with item: " + agentBidOnItem.getItemBiddingOn().getName() +
+                            "\nSN :" + agentBidOnItem.getItemBiddingOn().getItemSerialNum());
+
         return agentBidOnItem;
+    }
+
+    public boolean checkBidStillGoing(AuctionItem item)
+    {
+        item.getItemSerialNum();
+        
+
+        try
+        {
+            return (Boolean) inCurrentAuctionHouse.readObject();
+        }
+        catch(IOException | ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -396,8 +428,8 @@ public class Agent
             outCurrentAuctionHouse.flush();
 
             listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
-            System.out.println("\nItems we get from auction house:\n");
-            printListOfAuctionItems(listOfAuctionItems);
+            //System.out.println("\nItems we get from auction house:\n");
+            //printListOfAuctionItems(listOfAuctionItems);
 
         }
         catch(IOException e)

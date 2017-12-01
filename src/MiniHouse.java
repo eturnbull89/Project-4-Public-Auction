@@ -135,6 +135,9 @@ class MiniHouse extends Thread
         boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
                                  !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
 
+        System.out.println("AH Items List SN: " + items.get(itemIndex).getItemSerialNum() +
+                            "\nBid item SN: " + item.getItemSerialNum());
+
         boolean stillListed = items.get(itemIndex).getItemSerialNum() == item.getItemSerialNum();
 
         if(stillListed)
@@ -290,7 +293,7 @@ class MiniHouse extends Thread
                     printArrayList(items);
                 }
             }
-        }, 30*1000);
+        }, 15*1000);
     }
 
     private void printArrayList(ArrayList<AuctionItem> ar)
