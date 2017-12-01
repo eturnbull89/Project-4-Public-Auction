@@ -30,6 +30,8 @@ public class Agent
     private ObjectInputStream inCurrentAuctionHouse;
     private ObjectOutputStream outCurrentAuctionHouse;
 
+    private ArrayList<Bid> currentBids;
+
     /**
      *
      *
@@ -263,12 +265,15 @@ public class Agent
         try
         {
             Scanner sc = new Scanner(System.in);
-            System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouseName
-                    + "\\" + itemBiddingOn.getName());
 
+
+            System.out.println("\nMain Menu\\AuctionCentral\\" + auctionHouseName + "\\" + itemBiddingOn.getName());
             System.out.println("Minimum bid: " + itemBiddingOn.getMinimumBid());
 
-            Bid agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
+            //if there is already a bid on this item, don't make a new bid object
+            Bid agentBidOnItem = getBidOnSameItem(itemBiddingOn.getName());
+            if(agentBidOnItem == null)
+                 agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
 
             while (listOfItems.contains(itemBiddingOn))
             {
@@ -321,6 +326,7 @@ public class Agent
 
                         //write our bid to the auction house
                         outCurrentAuctionHouse.writeObject(agentBidOnItem);
+                        outCurrentAuctionHouse.flush();
 
                         //read in the bid back from the auction house, NOTE: only do this after sending auction house a bid
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
@@ -349,6 +355,16 @@ public class Agent
         {
             e.printStackTrace();
         }
+    }
+
+    private Bid getBidOnSameItem(String itemName)
+    {
+        for(Bid bid : currentBids)
+        {
+            if(bid.getItemBiddingOn().getName().equals(itemName))
+                return bid;
+        }
+        return null;
     }
 
     private boolean listContainsItem(int itemId, ArrayList<AuctionItem> items)
