@@ -15,7 +15,7 @@ public class Bid implements Serializable
     private final AuctionItem itemBiddingOn;
     private final Integer agentBidKey;
     private int bidAmount;
-    private String bidStatus;
+    private String bidStatus = "NotOver";
 
     public Bid(Integer agentBidKey, AuctionItem itemBiddingOn)
     {

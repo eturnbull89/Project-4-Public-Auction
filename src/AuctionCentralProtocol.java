@@ -134,6 +134,7 @@ public class AuctionCentralProtocol
         } catch (IOException | ClassNotFoundException e)
         {
             System.out.println("lost connection to house");
+            HouseToSecretKey.remove(houseReg,secretKey);
         }
     }
 

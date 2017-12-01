@@ -278,19 +278,32 @@ class MiniHouse extends Thread
             {
                 if(agentBid.getBidAmount() == item.getCurrentBid())
                 {
-                    agentBid.setBidStatus("Over");
+                    items.remove(items.get(agentBid.getItemBiddingOn().getItemId()));
+                    printArrayList(items);
 
-                    try
-                    {
-                        toAgent.writeObject(agentBid);
-                        System.out.println("wrote to winner");
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
+                    System.out.println("wrote to winner");
+
+//                    //agentBid.setBidStatus("Over");
+//
+//                    try
+//                    {
+//                        //toAgent.writeObject(agentBid);
+//
+//                    }
+//                    catch (IOException e)
+//                    {
+//                        e.printStackTrace();
+//                    }
                 }
             }
-        }, 30*1000);
+        }, 5*1000);
+    }
+
+    public void printArrayList(ArrayList<AuctionItem> ar)
+    {
+        for(AuctionItem araryy : ar)
+        {
+            System.out.println(araryy.getName());
+        }
     }
 }
