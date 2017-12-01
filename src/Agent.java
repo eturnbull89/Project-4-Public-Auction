@@ -285,6 +285,8 @@ public class Agent
 
                 if(!checkBidStillGoing(itemBiddingOn))
                 {
+                    System.out.println("Auction was over, not sending bid.");
+                    removeItem(itemBiddingOn.getName());
                     return;
                 }
                 else if(bidInput.toLowerCase().equals("exit"))
@@ -399,17 +401,19 @@ public class Agent
 
     public boolean checkBidStillGoing(AuctionItem item)
     {
-        item.getItemSerialNum();
-        
+        itemEnquire itEnq = new itemEnquire(item.getItemId(), item.getItemSerialNum());
+
 
         try
         {
+            outCurrentAuctionHouse.writeObject(itEnq);
             return (Boolean) inCurrentAuctionHouse.readObject();
         }
         catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
+        return false;
     }
 
     /**
