@@ -66,19 +66,44 @@ class MiniHouse extends Thread
                 //If the object that is read is a bid handel bidding procedure.
                 if(passed instanceof Bid)
                 {
+                    System.out.println("passed bid info:");
+                    System.out.println(((Bid) passed).getItemBiddingOn().getName());
+                    System.out.println(((Bid) passed).getBidAmount());
+                    System.out.println(((Bid) passed).getBidStatus());
+
                     //Create a bid to pass back to the agent.
                     Bid passedBid = bidProtocol(centralIn, centralOut, (Bid) passed);
-                    System.out.println("Current bid passing back to Agent " + passedBid.getItemBiddingOn().getCurrentBid());
+                    //System.out.println("Current bid passing back to Agent " + passedBid.getItemBiddingOn().getCurrentBid());
+
+                    System.out.println("passed bid status: "+ passedBid.getBidStatus());
 
                     //Write the created bid back to the agent.
                     outFromHouse.writeObject(passedBid);
 
-                    System.out.println("Passing back the bid");
+                    //System.out.println("Passing back the bid");
+                    System.out.println("items size: "+items.size());
 
                     if(passedBid.getBidStatus().equals("acceptance"))
                     {
                        countdown(passedBid);
                        printArrayList(this.items);
+                    }
+                }
+
+                else if(passed instanceof itemEnquire)
+                {
+                    int id = ((itemEnquire) passed).getId();
+
+                    if(id > items.size())
+                    {
+                        outFromHouse.writeObject(false);
+                    }
+
+                    else
+                    {
+                        int itemSerial = items.get(id).getItemSerialNum();
+
+                        outFromHouse.writeObject(itemSerial == ((itemEnquire) passed).getSerialNumber());
                     }
                 }
 
@@ -140,6 +165,9 @@ class MiniHouse extends Thread
 
         boolean stillListed = items.get(itemIndex).getItemSerialNum() == item.getItemSerialNum();
 
+        System.out.println("item being bid on: " +item.getName());
+        System.out.println(items.get(itemIndex).getName()+" is still listed: "+ stillListed);
+
         if(stillListed)
         {
             //If the agents bid amount is greater then the current bid create a new hold.
@@ -148,19 +176,19 @@ class MiniHouse extends Thread
 
                 //Create a transaction to pass to auction central.
                 AuctionTransaction hold = new AuctionTransaction(agentKey, bidAmount, -1);
-                System.out.println("Created auction transaction");
+                //System.out.println("Created auction transaction");
 
                 try
                 {
                     //Write the Transaction object to central
                     toCentral.writeObject(hold);
 
-                    System.out.println("Wrote the auction transaction to auction central");
+                    //System.out.println("Wrote the auction transaction to auction central");
 
                     //Get centrals confirmation of hold.
                     holdConfirm = (Boolean) fromCentral.readObject();
 
-                    System.out.println("Received confirmation of hold");
+                    //System.out.println("Received confirmation of hold");
 
                 }
                 catch (IOException | ClassNotFoundException e)
@@ -268,8 +296,6 @@ class MiniHouse extends Thread
             //Update the bid status on the bid.
             agentBid.setBidStatus("Over");
         }
-
-
 
         return agentBid;
     }
