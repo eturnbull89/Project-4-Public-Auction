@@ -272,6 +272,7 @@ public class Agent
 
             while (listOfItems.contains(itemBiddingOn))
             {
+                //set highest bid to the current bid of the item we're bidding on in the bid object
                 int highestBid = agentBidOnItem.getItemBiddingOn().getCurrentBid();
 
                 inquireBankBalance();
@@ -306,15 +307,21 @@ public class Agent
                     else
                     {
                         agentBidOnItem.setBidAmount(bidAmount);
+
+                        //before we make a bit, request the list of auction items
                         listOfItems = requestListOfAuctionItems();
 
+                        //double check the list of auction items to see if our item is in the list
                         if(!listContainsItem(itemBiddingOn.getItemId(), listOfItems))
                         {
                             System.out.println("No\n\n");
-                            return;
+                            return;                         //return out of bidding if the item is no longer in the list
                         }
 
+                        //write our bid to the auction house
                         outCurrentAuctionHouse.writeObject(agentBidOnItem);
+
+                        //read in the bid back from the auction house, NOTE: only do this after sending auction house a bid
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
 
                         if(agentBidOnItem.getBidStatus().equals("pass"))
@@ -328,6 +335,7 @@ public class Agent
                     System.out.println("Please either enter Exit to stop bidding, or a number to bid.");
                 }
 
+                //after every iteration of the while loop request the list of auction items to ensure we have the right one
                 listOfItems = requestListOfAuctionItems();
             }
             System.out.println("Bid was over for item");
