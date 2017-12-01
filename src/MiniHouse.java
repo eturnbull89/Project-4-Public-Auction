@@ -92,20 +92,6 @@ class MiniHouse extends Thread
 
                     System.out.println(message);
 
-                    //If the string is equal to exit, set the listening variable to false.
-                    if(message.equals("exit"))
-                    {
-                        listening = false;
-                    }
-
-                    //If the string is equal to list return the item list to the agent.
-                    else if(message.equals("list"))
-                    {
-                        System.out.println(items.get(0).getCurrentBid());
-                        printArrayList(items);                              //checking if item removed is still in items right before we write it to agent
-                        outFromHouse.writeObject(items);
-                    }
-
                     //If the message is something else return an error message for agent to process.
                     switch (message)
                     {
