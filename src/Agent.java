@@ -309,6 +309,7 @@ public class Agent
                         agentBidOnItem.setBidAmount(bidAmount);
 
                         //before we make a bit, request the list of auction items
+                        System.out.println("requesting items before a bid\n\n");
                         listOfItems = requestListOfAuctionItems();
 
                         //double check the list of auction items to see if our item is in the list
@@ -403,6 +404,7 @@ public class Agent
     {
         Object testObject;
         ArrayList<AuctionItem> listOfAuctionItems = null;
+
         try
         {
             String requestForAuctionItems = "list";
@@ -410,7 +412,11 @@ public class Agent
             outCurrentAuctionHouse.flush();
 
             listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
+            System.out.println("\nItems we get from auction house:\n");
+            printListOfAuctionItems(listOfAuctionItems);
+
             return listOfAuctionItems;
+
         }
         catch(IOException e)
         {

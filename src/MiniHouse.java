@@ -108,6 +108,7 @@ class MiniHouse extends Thread
                     else if(message.equals("list"))
                     {
                         System.out.println(items.get(0).getCurrentBid());
+                        printArrayList(items);                              //checking if item removed is still in items right before we write it to agent
                         outFromHouse.writeObject(items);
                     }
 
