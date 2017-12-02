@@ -18,6 +18,9 @@ class MiniHouse extends Thread
     //List of items for sale by this auction house.
     private ArrayList<AuctionItem> items = null;
 
+    //List of auction items that contain the winners info.
+    private ArrayList<AuctionItem> winnerList = new ArrayList<>();
+
     //The key used by the auction house, used to update the current bid amount on an item.
     private final Integer houseKey;
 
@@ -66,10 +69,10 @@ class MiniHouse extends Thread
                 //If the object that is read is a bid handel bidding procedure.
                 if(passed instanceof Bid)
                 {
-                    System.out.println("passed bid info:");
+                    /*System.out.println("passed bid info:");
                     System.out.println(((Bid) passed).getItemBiddingOn().getName());
                     System.out.println(((Bid) passed).getBidAmount());
-                    System.out.println(((Bid) passed).getBidStatus());
+                    System.out.println(((Bid) passed).getBidStatus());*/
 
                     //Create a bid to pass back to the agent.
                     Bid passedBid = bidProtocol(centralIn, centralOut, (Bid) passed);
@@ -95,6 +98,17 @@ class MiniHouse extends Thread
                     boolean inList = itemExists(((itemEnquire) passed).getSerialNumber());
 
                     outFromHouse.writeObject(inList);
+                }
+
+                else if(passed instanceof WinnerInquire)
+                {
+                    int serialNumber = ((WinnerInquire) passed).getAuctionItem().getItemSerialNum();
+
+                    int bidKey = ((WinnerInquire) passed).getBiddingKey();
+
+                    outFromHouse.writeObject(winner(serialNumber, bidKey));
+
+                    System.out.println("winner inquire wrote back.");
                 }
 
                 //If the object is a string.
@@ -152,13 +166,20 @@ class MiniHouse extends Thread
             //Index of the item based on the items id.
             int itemIndex = findIndex(item.getItemSerialNum());
 
-            boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
-                    !items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
+            boolean bidderKeysMatch = false;
 
-            System.out.println("AH Items List SN: " + items.get(itemIndex).getItemSerialNum() +
+            if(items.get(itemIndex).getHighestBidderKey() != null)
+            {
+                bidderKeysMatch = items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
+            }
+
+            boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
+                    !(items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey()));
+
+            /*System.out.println("AH Items List SN: " + items.get(itemIndex).getItemSerialNum() +
                     "\nBid item SN: " + item.getItemSerialNum());
 
-            System.out.println("item being bid on: " +item.getName());
+            System.out.println("item being bid on: " +item.getName());*/
 
             //If the agents bid amount is greater then the current bid create a new hold.
             if (items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount() && previousBidder)
@@ -259,8 +280,9 @@ class MiniHouse extends Thread
 
                     agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
 
+
                     //Set the bid status to pass.
-                    agentBid.setBidStatus("pass");
+                    agentBid.setBidStatus("reject");
                 }
 
                 //If we were not able to place a hold on the agents account.
@@ -270,14 +292,20 @@ class MiniHouse extends Thread
                 }
             }
 
-            //The bid amount was lower or equal to the current bid amount.
+            //If the agent was the previous bidder and tried to bid again.
+            else if(!previousBidder)
+            {
+                agentBid.setBidStatus("pass");
+            }
+
+            //The bid amount was lower or equal to the current bid amount and the agent is not the previous bidder
             else
             {
                 AuctionItem higherBidItem = items.get(itemIndex);
 
                 agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
 
-                agentBid.setBidStatus("pass");
+                agentBid.setBidStatus("reject");
             }
         }
 
@@ -305,10 +333,19 @@ class MiniHouse extends Thread
             {
                 if(agentBid.getBidAmount() == item.getCurrentBid())
                 {
+                    //Add the item to the winners list.
+                    winnerList.add(item);
+
+                    //remove the item from the public listing.
                     items.remove(itemIndex);
 
                     System.out.println("wrote to winner, updated list:");
+
                     printArrayList(items);
+
+                    System.out.println("winners list:");
+
+                    printArrayList(winnerList);
                 }
             }
         }, 30*1000);
@@ -351,5 +388,18 @@ class MiniHouse extends Thread
         }
 
         return 0;
+    }
+
+    private boolean winner(int serialNumber, int bidKey)
+    {
+        for (AuctionItem aWinnerList : winnerList)
+        {
+            if (aWinnerList.getItemSerialNum() == serialNumber && aWinnerList.getHighestBidderKey() == bidKey)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
