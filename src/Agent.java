@@ -312,7 +312,7 @@ public class Agent
                 if(!checkBidStillGoing(itemBiddingOn))
                 {
 
-                    System.out.println("Auction was over, not sending bid.");
+//                    System.out.println("Auction was over, not sending bid.");
                     inquireWinner(itemBiddingOn);
                     updateListOfAuctionItems();
 
@@ -332,7 +332,8 @@ public class Agent
                     if(!checkBidWithBank(bidAmount))
                     {
 
-                        System.out.println("You do not have those funds available, enter a lower bid.");
+                        System.out.print((char) 27 + "[31mYou do not have those funds available, enter a lower bid."
+                                        + (char) 27 + "[0m");
                         //TODO write AuctionHouse bad bid, read in current highest bid afterwards
                         continue;
 
@@ -341,13 +342,15 @@ public class Agent
                     if (bidAmount < highestBid)
                     {
 
-                        System.out.println("Please enter a higher bid");
+                        System.out.print((char) 27 + "[31myour bid was rejected. Try bidding higher than the current bid."
+                                            + (char) 27 + "[0m");
 
                     }
                     else if(bidAmount > bankAccount.getBalance())
                     {
 
-                        System.out.println("You do not have the available funds for that bid");
+                        System.out.print((char) 27 + "[31mYou do not have the available funds for that bid"
+                                        + (char) 27 + "[0m");
 
                     }
                     else
@@ -366,20 +369,23 @@ public class Agent
                         if(agentBidOnItem.getBidStatus().toLowerCase().equals("pass"))
                         {
 
-                            System.out.println("Your bid was passed, you're already winning the auction!");
+                            System.out.print((char) 27 + "[31mYour bid was passed, you're already winning the auction!"
+                                            + (char) 27 + "[0m");
                             agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getCurrentBid());
 
                         }
                         else if(agentBidOnItem.getBidStatus().toLowerCase().equals("acceptance"))
                         {
 
-                            System.out.println("******You're currently winning the auction******");
+                            System.out.print((char) 27 + "[32m******You're currently winning the auction******"
+                                            + (char) 27 + "[0m");
 
                         }
                         else if(agentBidOnItem.getBidStatus().toLowerCase().equals("reject"))
                         {
 
-                            System.out.println("Your bid was rejected. Try bidding higher than the current bid.");
+                            System.out.print((char) 27 + "[31mYour bid was rejected. Try bidding higher than the current bid."
+                                            + (char) 27 + "[0m");
 
                         }
                     }
@@ -418,14 +424,16 @@ public class Agent
         try
         {
             WinnerInquire winnerInquire = new WinnerInquire(item, biddingKey);
+            System.out.println("Writing winner object to auction house...");
             outCurrentAuctionHouse.writeObject(winnerInquire);
             outCurrentAuctionHouse.reset();
 
+            System.out.println("Reading boolean from auction house...");
             boolean amWinner = (Boolean) inCurrentAuctionHouse.readObject();
             if(amWinner)
-                System.out.println("Congrats, you won the bid for " + item.getName() + " !");
+                System.out.print((char) 27 + "[32mCongrats, you won the bid for " + item.getName() + "!" + (char) 27 + "[0m");
             else
-                System.out.println("Sorry, you lost the bid for " + item.getName() + " .");
+                System.out.print((char) 27 + "[31mSorry, you lost the bid for " + item.getName() + "." + (char) 27 + "[0m");
         }
         catch(IOException e)
         {
@@ -659,7 +667,7 @@ public class Agent
         for(AuctionItem ai : auctionItems)
         {
             counter++;
-            System.out.println(counter + ". " + ai.getName() + ai.getCurrentBid());
+            System.out.println(counter + ". " + ai.getName() + " | Current Bid: " + ai.getCurrentBid());
         }
     }
 

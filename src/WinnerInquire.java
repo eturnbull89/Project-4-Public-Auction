@@ -1,7 +1,9 @@
+import java.io.Serializable;
+
 /**
  * Created by tristin on 12/1/2017.
  */
-public class WinnerInquire
+public class WinnerInquire implements Serializable
 {
     private final AuctionItem auctionItem;
 
