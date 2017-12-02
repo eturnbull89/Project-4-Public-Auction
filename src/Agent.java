@@ -333,12 +333,16 @@ public class Agent
 
                         if(agentBidOnItem.getBidStatus().toLowerCase().equals("pass"))
                         {
-                            System.out.println("Your bid was passed.");
+                            System.out.println("Your bid was passed, you're already winning the auction!");
                             agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getCurrentBid());
                         }
                         else if(agentBidOnItem.getBidStatus().toLowerCase().equals("acceptance"))
                         {
                             System.out.println("******You're currently winning the auction******");
+                        }
+                        else if(agentBidOnItem.getBidStatus().toLowerCase().equals("reject"))
+                        {
+                            System.out.println("Your bid was rejected. Try bidding higher than the current bid.");
                         }
                     }
                 }
@@ -350,6 +354,7 @@ public class Agent
                 //after every iteration of the while loop request the list of auction items to ensure we have the right one
                 updateListOfAuctionItems();
             }
+            inquireWinner(itemBiddingOn);
             System.out.println("Bid over!");
             //removeItem(itemBiddingOn.getName());
         }
@@ -363,31 +368,56 @@ public class Agent
         }
     }
 
+    private void inquireWinner(AuctionItem item)
+    {
+        try
+        {
+            WinnerInquire winnerInquire = new WinnerInquire(item, biddingKey);
+            outCurrentAuctionHouse.writeObject(winnerInquire);
+            outCurrentAuctionHouse.reset();
+
+            boolean amWinner = (Boolean) inCurrentAuctionHouse.readObject();
+            if(amWinner)
+                System.out.println("Congrats, you won the bid for " + item.getName() + " !");
+            else
+                System.out.println("Sorry, you lost the bid for " + item.getName() + " .");
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+        catch(ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+
     private Bid checkBid(AuctionItem itemBiddingOn)
     {
         Bid agentBidOnItem;
-        System.out.println("Checking bid on item: " + itemBiddingOn.getName() + " SN: " + itemBiddingOn.getItemSerialNum());
+        //System.out.println("Checking bid on item: " + itemBiddingOn.getName() + " SN: " + itemBiddingOn.getItemSerialNum());
 
         if(currentBids.isEmpty())
         {
-            System.out.println("No bids, creating new bid");
+            //System.out.println("No bids, creating new bid");
             agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
             currentBids.add(agentBidOnItem);
         }
         else if(getBidOnSameItem(itemBiddingOn.getName()) != null)
         {
-            System.out.println("Bid already exists");
+            //System.out.println("Bid already exists");
             agentBidOnItem = getBidOnSameItem(itemBiddingOn.getName());
         }
         else
         {
-            System.out.println("New bid!");
+            //System.out.println("New bid!");
             agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
             currentBids.add(agentBidOnItem);
         }
 
-        System.out.println("Bid made with item: " + agentBidOnItem.getItemBiddingOn().getName() +
-                            "\nSN :" + agentBidOnItem.getItemBiddingOn().getItemSerialNum());
+//        System.out.println("Bid made with item: " + agentBidOnItem.getItemBiddingOn().getName() +
+//                            "\nSN :" + agentBidOnItem.getItemBiddingOn().getItemSerialNum());
 
         return agentBidOnItem;
     }
@@ -427,7 +457,7 @@ public class Agent
             outCurrentAuctionHouse.reset();
 
             listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
-            System.out.println("\nItems we get from auction house:\n");
+//            System.out.println("\nItems we get from auction house:");
             printListOfAuctionItems(listOfAuctionItems);
 
         }
@@ -458,35 +488,12 @@ public class Agent
         {
             if(bid.getItemBiddingOn().getName().equals(itemName))
             {
-                System.out.println("Bid on item for bid that already existed: " + bid.getItemBiddingOn().getCurrentBid());
-                System.out.println("Current bid on bid for item: " + bid.getBidAmount());
+//                System.out.println("Bid on item for bid that already existed: " + bid.getItemBiddingOn().getCurrentBid());
+//                System.out.println("Current bid on bid for item: " + bid.getBidAmount());
                 return bid;
             }
         }
         return null;
-    }
-
-    private void removeItem(String itemName)
-    {
-        List<AuctionItem> toRemove = new ArrayList<>();
-        for(AuctionItem ai : listOfAuctionItems)
-        {
-            if(ai.getName().equals(itemName))
-                toRemove.add(ai);
-        }
-        listOfAuctionItems.removeAll(toRemove);
-    }
-
-    private boolean listContainsItem(int itemId, ArrayList<AuctionItem> items)
-    {
-        for(AuctionItem ai : items)
-        {
-            System.out.println(ai.getName());
-
-            if(ai.getItemId() == itemId)
-                return true;
-        }
-        return false;
     }
 
     private boolean checkBidWithBank(int bid)
@@ -509,17 +516,6 @@ public class Agent
             e.printStackTrace();
         }
         return false;
-    }
-
-    private AuctionItem getUpdatedItem(int itemNumber)
-    {
-        updateListOfAuctionItems();
-        if(listOfAuctionItems != null)
-            printListOfAuctionItems(listOfAuctionItems);
-
-        AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
-
-        return itemBiddingOn;
     }
 
     /**
@@ -607,4 +603,38 @@ public class Agent
     {
         return s != null && s.matches("[-+]?\\d*\\.?\\d+");
     }
+
+//    private AuctionItem getUpdatedItem(int itemNumber)
+//    {
+//        updateListOfAuctionItems();
+//        if(listOfAuctionItems != null)
+//            printListOfAuctionItems(listOfAuctionItems);
+//
+//        AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
+//
+//        return itemBiddingOn;
+//    }
+//
+//    private void removeItem(String itemName)
+//    {
+//        List<AuctionItem> toRemove = new ArrayList<>();
+//        for(AuctionItem ai : listOfAuctionItems)
+//        {
+//            if(ai.getName().equals(itemName))
+//                toRemove.add(ai);
+//        }
+//        listOfAuctionItems.removeAll(toRemove);
+//    }
+//
+//    private boolean listContainsItem(int itemId, ArrayList<AuctionItem> items)
+//    {
+//        for(AuctionItem ai : items)
+//        {
+//            System.out.println(ai.getName());
+//
+//            if(ai.getItemId() == itemId)
+//                return true;
+//        }
+//        return false;
+//    }
 }
