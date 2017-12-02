@@ -119,7 +119,7 @@ public class BankServerCommunication implements Runnable
 
                     Integer bid = (Integer) inObj;
 
-                    if(bank.getAccount(key).getBalance() > bid)
+                    if(bank.getAccount(key).getBalance() >= bid)
                     {
                         out.writeObject(true);
                     }

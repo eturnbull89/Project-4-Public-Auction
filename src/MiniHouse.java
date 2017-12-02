@@ -348,7 +348,7 @@ class MiniHouse extends Thread
                     printArrayList(winnerList);
                 }
             }
-        }, 30*1000);
+        }, 30*1000); //make sure 30s
     }
 
     private void printArrayList(ArrayList<AuctionItem> ar)

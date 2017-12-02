@@ -213,6 +213,7 @@ public class AuctionCentralProtocol
                     AuctionCentralServer.debug("sent house list to agent");
                     out.writeObject(houses);
                     out.flush();
+                    out.reset();
                 }
             }
         }catch(IOException e){

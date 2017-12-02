@@ -19,12 +19,14 @@ import java.util.*;
  *
  *
  */
+//TODO remove auction house from auction house lists once auction house no longer has any items
 
 public class Agent
 {
     private String agentName = "";
     private AcctKey bankAccount;
     private Integer biddingKey;
+    private AuctionItem lastItemBid;
 
     private ObjectInputStream inBank;
     private ObjectOutputStream outBank;
@@ -187,7 +189,7 @@ public class Agent
             {
                 while (!listOfAuctionHouses.isEmpty())
                 {
-                    System.out.println((char) 27 + "[33m\nMain Menu\\AuctionCentral" + (char) 27 + "[0m");
+                    System.out.println((char) 27 + "[33m\nMain Menu\\AuctionHouses" + (char) 27 + "[0m");
                     listOfAuctionHouses = requestListOfAuctionHouses();
                     printListOfAuctionHouses(listOfAuctionHouses);
 
@@ -240,6 +242,19 @@ public class Agent
 
         while(!listOfAuctionItems.isEmpty())
         {
+            if(!checkBidWithBank(1))
+            {
+                System.out.println("Less than 1 fund available");
+                if(!checkBidStillGoing(lastItemBid))
+                {
+//                    System.out.println("\nYou don't have any more funds! Thanks for playing!");
+                    System.exit(1);
+                }
+//                else
+//                {
+//                    System.out.println(lastItemBid.getName() + " still going!");
+//                }
+            }
             updateListOfAuctionItems();       //get the new list of items whenever we exit out of an item
 
             System.out.println((char) 27 + "[33m\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName()
@@ -334,7 +349,6 @@ public class Agent
 
                         System.out.print((char) 27 + "[31mYou do not have those funds available, enter a lower bid."
                                         + (char) 27 + "[0m");
-                        //TODO write AuctionHouse bad bid, read in current highest bid afterwards
                         continue;
 
                     }
@@ -342,7 +356,7 @@ public class Agent
                     if (bidAmount < highestBid)
                     {
 
-                        System.out.print((char) 27 + "[31myour bid was rejected. Try bidding higher than the current bid."
+                        System.out.print((char) 27 + "[31mYour bid was rejected. Try bidding higher than the current bid."
                                             + (char) 27 + "[0m");
 
                     }
@@ -364,6 +378,7 @@ public class Agent
 
                         //read in the bid back from the auction house, NOTE: only do this after sending auction house a bid
                         agentBidOnItem = (Bid) inCurrentAuctionHouse.readObject();
+                        lastItemBid = agentBidOnItem.getItemBiddingOn();
 //                        System.out.println("Bid status: " + agentBidOnItem.getBidStatus());
 
                         if(agentBidOnItem.getBidStatus().toLowerCase().equals("pass"))
@@ -424,11 +439,11 @@ public class Agent
         try
         {
             WinnerInquire winnerInquire = new WinnerInquire(item, biddingKey);
-            System.out.println("Writing winner object to auction house...");
+//            System.out.println("Writing winner object to auction house...");
             outCurrentAuctionHouse.writeObject(winnerInquire);
             outCurrentAuctionHouse.reset();
 
-            System.out.println("Reading boolean from auction house...");
+//            System.out.println("Reading boolean from auction house...");
             boolean amWinner = (Boolean) inCurrentAuctionHouse.readObject();
             if(amWinner)
                 System.out.print((char) 27 + "[32mCongrats, you won the bid for " + item.getName() + "!" + (char) 27 + "[0m");
@@ -489,7 +504,6 @@ public class Agent
     {
         itemEnquire itEnq = new itemEnquire(item.getItemId(), item.getItemSerialNum());
 
-
         try
         {
             outCurrentAuctionHouse.writeObject(itEnq);
@@ -512,7 +526,6 @@ public class Agent
      */
     private void updateListOfAuctionItems()
     {
-
         try
         {
             String requestForAuctionItems = "list";
