@@ -141,10 +141,15 @@ public class BankAccount extends Account implements Serializable
      */
     public boolean clearHold(int amount)
     {
-        updateBalance("deposit", amount);
-        this.fundsInHold -= amount;
+        if(fundsInHold >= amount)
+        {
+            updateBalance("deposit", amount);
+            this.fundsInHold -= amount;
 
-        return true;
+            return true;
+        }
+
+        return false;
     }
 
     /**
