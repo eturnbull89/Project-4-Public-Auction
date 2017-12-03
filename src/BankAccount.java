@@ -99,7 +99,7 @@ public class BankAccount extends Account implements Serializable
     {
         if(balance >= amount)
         {
-            this.fundsInHold = amount;
+            this.fundsInHold += amount;
 
             updateBalance("withdraw", amount);
             return true;
