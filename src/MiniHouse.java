@@ -335,6 +335,14 @@ class MiniHouse extends Thread
                 {
                     //Add the item to the winners list.
                     winnerList.add(item);
+                    AuctionTransaction withdraw = new AuctionTransaction(item.getHighestBidderKey(), item.getCurrentBid(), 0);
+
+                    try {
+                        centralOut.writeObject(withdraw);
+                        centralOut.reset();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
                     //remove the item from the public listing.
                     items.remove(itemIndex);

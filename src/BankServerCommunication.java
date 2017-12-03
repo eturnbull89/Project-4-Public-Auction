@@ -96,6 +96,7 @@ public class BankServerCommunication implements Runnable
                     }
                     else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
                     {
+                        System.out.println("Withdrawing from auction won");
                         out.writeObject(bank.getAccount(newTrans.bankKey).deductHoldAmount(newTrans.amount));
                     }
                 }
