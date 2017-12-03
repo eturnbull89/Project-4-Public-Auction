@@ -63,10 +63,13 @@ public class AuctionCentralServer
                 debug("New Client Recieved");
 
 
+
                 //Set up communication channels with the new Socket
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
                 out.flush();
+
+
 
                 //Client sends first object either Registration(House) or BankKey(agent)
                 Object fromClient = in.readObject();

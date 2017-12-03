@@ -1,4 +1,6 @@
 
+import com.sun.org.apache.regexp.internal.RE;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -123,6 +125,7 @@ public class AuctionCentralProtocol
                     Boolean result = bankConnection.RequestFromBank(trans);
 
                     out.writeObject(result);
+                    out.reset();
 
                     AuctionCentralServer.debug("Result sent");
                 }
@@ -133,8 +136,15 @@ public class AuctionCentralProtocol
             }
         } catch (IOException | ClassNotFoundException e)
         {
-            System.out.println("lost connection to house");
+            AuctionCentralServer.debug("lost connection to house");
             HouseToSecretKey.remove(houseReg,secretKey);
+
+            AuctionCentralServer.debug("houses Left Now:");
+            int i = 1;
+            for(Registration r: HouseToSecretKey.keySet()){
+                AuctionCentralServer.debug(i + ") " + r.getHouseName());
+                i++;
+            }
         }
     }
 
@@ -167,6 +177,7 @@ public class AuctionCentralProtocol
 
         Integer bidKey;
         ArrayList<Registration> houses = new ArrayList<>();
+        ArrayList<Registration> housesToRemove = new ArrayList<>();
 
         AuctionCentralServer.debug("New agent sent bankKey: " + agentBankKey);
 
@@ -198,6 +209,7 @@ public class AuctionCentralProtocol
 
 
                 out.flush();
+                out.reset();
                 fromAgent = in.readObject();
 
                 if (fromAgent instanceof String)
@@ -209,10 +221,17 @@ public class AuctionCentralProtocol
                             houses.add(e);
                     }
 
+                    //remove disconnected or closed houses
+                    for(Registration e: houses){
+                        if(!HouseToSecretKey.containsKey(e)){
+                            housesToRemove.add(e);
+                        }
+                    }
+                    houses.removeAll(housesToRemove);
+                    housesToRemove.clear();
 
                     AuctionCentralServer.debug("sent house list to agent");
                     out.writeObject(houses);
-                    out.flush();
                     out.reset();
                 }
             }
