@@ -41,7 +41,6 @@ public class Agent
     /**
      *
      *
-     *
      */
 
     public static void main(String[] args) throws IOException, UnknownObjectException, ClassNotFoundException
@@ -71,7 +70,9 @@ public class Agent
     }
 
     /**
-     * registerWithBank:
+     * registerWithBank: setup the sockets with the bankHostName and bankPortNumber,
+     * then create the output and input streams. Setup an account with the bank, will
+     * get the bank key back.
      * @param bankHostName
      * @param bankPortNumber
      */
@@ -112,7 +113,9 @@ public class Agent
     }
 
     /**
-     * registerWithAuctionCentral:
+     * registerWithAuctionCentral: setup the sockets with the auction central host name and port number,
+     * then create the output and input streams. Register with the auction central that we're wanting to bid,
+     * get the bidding key back from the auction central
      * @param acHostName
      * @param acPortNum
      */
@@ -226,7 +229,10 @@ public class Agent
     }
 
     /**
-     * joinAuctionHouse:
+     * joinAuctionHouse: joins an auction house given the list from aution central, displays the items
+     * given from the auction house joined. Checks if the users last item bidding on is still going and if they have
+     * any funds left, if not, shuts down the client. Otherwise, lets the user decide which item they would like
+     * to bid on and enters them into bidding for that item.
      * @param listOfAuctionHouses
      * @param auctionHouseNum
      * @throws IOException
@@ -346,6 +352,8 @@ public class Agent
 
                     if(!checkBidWithBank(bidAmount))
                     {
+//                        //TODO need to send AuctionHouse that the bid was failed still, so we can still know that the bid is over.
+//                        if(checkBidStillGoing(itemBiddingOn))
 
                         System.out.print((char) 27 + "[31mYou do not have those funds available, enter a lower bid."
                                         + (char) 27 + "[0m");
@@ -431,7 +439,7 @@ public class Agent
     }
 
     /**
-     * inquireWinner:
+     * inquireWinner: asks the auction houses if they won the auction for a given item.
      * @param item
      */
     private void inquireWinner(AuctionItem item)
@@ -462,7 +470,8 @@ public class Agent
     }
 
     /**
-     * checkBid:
+     * checkBid: check if a bid for the passed in auction item has already been created, if so, return that bid.
+     * otherwise
      * @param itemBiddingOn
      * @return
      */
