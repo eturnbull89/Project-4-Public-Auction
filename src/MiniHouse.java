@@ -367,13 +367,7 @@ class MiniHouse extends Thread
 
                     items.remove(itemIndex);
 
-                    /*System.out.println("wrote to winner, updated list:");
-
-                    printArrayList(items);
-
-                    System.out.println("winners list:");
-
-                    printArrayList(winnerList);*/
+                    System.out.println("wrote to winner, updated list");
                 }
             }
         }, 30*1000);
