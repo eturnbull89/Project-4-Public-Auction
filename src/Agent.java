@@ -1,7 +1,6 @@
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.rmi.activation.UnknownObjectException;
 import java.util.*;
 
@@ -502,7 +501,7 @@ public class Agent
      */
     public boolean checkBidStillGoing(AuctionItem item)
     {
-        itemEnquire itEnq = new itemEnquire(item.getItemSerialNum());
+        ItemEnquire itEnq = new ItemEnquire(item.getItemSerialNum());
 
         try
         {
