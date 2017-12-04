@@ -113,12 +113,12 @@ public class AuctionCentralProtocol
                     Integer key;
                     synchronized (keyLock)
                     {
-                        key = BidKeyToBankKey.get(ClientBid.bidKey);
+                        key = BidKeyToBankKey.get(ClientBid.getBidKey());
                     }
 
-                    AuctionCentralServer.debug("Bidkey " + ClientBid.bidKey + " to bank key " + key);
+                    AuctionCentralServer.debug("Bidkey " + ClientBid.getBidKey() + " to bank key " + key);
 
-                    Transaction trans = new Transaction(key, ClientBid.amount, ClientBid.request);
+                    Transaction trans = new Transaction(key, ClientBid.getAmount(), ClientBid.getRequest());
                     
                     AuctionCentralServer.debug("sending transaction to bank");
 
