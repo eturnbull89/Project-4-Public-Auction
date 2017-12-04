@@ -502,7 +502,7 @@ public class Agent
      */
     public boolean checkBidStillGoing(AuctionItem item)
     {
-        itemEnquire itEnq = new itemEnquire(item.getItemId(), item.getItemSerialNum());
+        itemEnquire itEnq = new itemEnquire(item.getItemSerialNum());
 
         try
         {
