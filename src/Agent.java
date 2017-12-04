@@ -489,9 +489,9 @@ public class Agent
             agentBidOnItem = new Bid(biddingKey, itemBiddingOn);
             currentBids.add(agentBidOnItem);
         }
-        else if(getBidOnSameItem(itemBiddingOn.getName()) != null)
+        else if(getBidOnSameItem(itemBiddingOn.getItemSerialNum()) != null)
         {
-            agentBidOnItem = getBidOnSameItem(itemBiddingOn.getName());
+            agentBidOnItem = getBidOnSameItem(itemBiddingOn.getItemSerialNum());
         }
         else
         {
@@ -570,14 +570,14 @@ public class Agent
     /**
      * getBidOnSameItem loops through our arraylist of bids and gets the
      * bid on the same item if it exists
-     * @param itemName
+     * @param itemSRN the items serial number
      * @return
      */
-    private Bid getBidOnSameItem(String itemName)
+    private Bid getBidOnSameItem(int itemSRN)
     {
         for(Bid bid : currentBids)
         {
-            if(bid.getItemBiddingOn().getName().equals(itemName))
+            if(bid.getItemBiddingOn().getItemSerialNum() == itemSRN)
             {
                 return bid;
             }
