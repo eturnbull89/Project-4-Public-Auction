@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-public class AuctionTransaction implements Serializable
+class AuctionTransaction implements Serializable
 {
     public Integer bidKey;
     public int amount;

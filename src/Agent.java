@@ -1,7 +1,6 @@
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.rmi.activation.UnknownObjectException;
 import java.util.*;
 
@@ -314,7 +313,7 @@ public class Agent
                 //set highest bid to the current bid of the item we're bidding on by going through our updated list
                 //of auction items
                 AuctionItem matchingItem = getMatchingItem(itemBiddingOn);
-                int highestBid = matchingItem.getCurrentBid();
+                int highestBid = matchingItem.getHighestBid();
 
                 inquireBankBalance();
                 System.out.println("Current highest bid on " + itemBiddingOn.getName() + " : " + highestBid);
@@ -382,7 +381,7 @@ public class Agent
 
                             System.out.print((char) 27 + "[31mYour bid was passed, you're already winning the auction!"
                                             + (char) 27 + "[0m");
-                            agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getCurrentBid());
+                            agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getHighestBid());
 
                         }
                         else if(agentBidOnItem.getBidStatus().toLowerCase().equals("acceptance"))
@@ -485,7 +484,7 @@ public class Agent
      */
     public boolean checkBidStillGoing(AuctionItem item)
     {
-        itemEnquire itEnq = new itemEnquire(item.getItemId(), item.getItemSerialNum());
+        ItemEnquire itEnq = new ItemEnquire(item.getItemSerialNum());
 
         try
         {
@@ -662,7 +661,7 @@ public class Agent
         for(AuctionItem ai : auctionItems)
         {
             counter++;
-            System.out.println(counter + ". " + ai.getName() + " | Current Bid: " + ai.getCurrentBid());
+            System.out.println(counter + ". " + ai.getName() + " | Current Bid: " + ai.getHighestBid());
         }
     }
 

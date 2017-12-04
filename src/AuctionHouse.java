@@ -36,6 +36,7 @@ public class AuctionHouse
         if(args.length != 5)
         {
             System.err.println("Not enough or too many initial arguments");
+
             System.exit(1);
         }
 
@@ -109,7 +110,7 @@ public class AuctionHouse
 
     //***********************************
     //String houseHost - The location that this auction house is located at, i.e. localhost or an ip address.
-    //int housePort - port number that this auction house is located at.
+    //int housePort - port number that this auction house is located at
     //String centralHost - The location that auction central is located at, i.e. localhost or an ip address.
     //int centralPort - the port number that auction central is located at.
     //register has no return value.
@@ -130,16 +131,14 @@ public class AuctionHouse
 
         try
         {
-            //Needed statement
             out.flush();
 
-            //Write to auction central the created registration.
             out.writeObject(centralReg);
 
             try
             {
-                //Receive back the confirmation object and set houseReg.
                 this.houseReg = (Confirmation) in.readObject();
+
                 System.out.println("house Registered, id is = "+this.houseReg.getPublicId());
 
             }
@@ -181,9 +180,6 @@ public class AuctionHouse
         //Array list of each string in the text file "sale list", used to build auction items.
         ArrayList<String> itemList = readList();
 
-        //The auction houses id, assigned by auction central and held in houseReg variable.
-        int houseId = houseReg.getPublicId();
-
         //The auction houses key, assigned by auction central and held in houseReg variable.
         int key = houseReg.getAuctionKey();
 
@@ -199,7 +195,7 @@ public class AuctionHouse
             int minBid = Integer.parseInt(itemList.get(listIndex+1));
 
             //Create a new auction item
-            AuctionItem listing = new AuctionItem(houseId, itemName, i, minBid, key, random.nextInt(1000));
+            AuctionItem listing = new AuctionItem(itemName, minBid, key, random.nextInt(1000));
 
             //Add the auction item to the house list
             houseList.add(i, listing);
