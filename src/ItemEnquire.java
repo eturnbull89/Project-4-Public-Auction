@@ -9,20 +9,20 @@ import java.io.Serializable;
  *          Adam Spanswick |
  * =============================================
  *
- * itemEnquire is used by an Agent to check if they have won the bid on an item. An itemEnquire object has the variable
- * serialNumber. This is the serial number of the AuctionItem that the agent wants to enquire about. itemEnquire has a
+ * ItemEnquire is used by an Agent to check if they have won the bid on an item. An ItemEnquire object has the variable
+ * serialNumber. This is the serial number of the AuctionItem that the agent wants to enquire about. ItemEnquire has a
  * constructor that is used to set serialNumber and a getter for serialNumber.
  */
-class itemEnquire implements Serializable
+class ItemEnquire implements Serializable
 {
     private final int serialNumber;
 
     /**
      * @param serialNumber - An int used to represent an items serial number.
-     * itemEnquire has no return value.
-     * itemEnquire is a constructor that is used to set the serialNumber field.
+     * ItemEnquire has no return value.
+     * ItemEnquire is a constructor that is used to set the serialNumber field.
      */
-    itemEnquire(int serialNumber)
+    ItemEnquire(int serialNumber)
     {
         this.serialNumber = serialNumber;
     }
