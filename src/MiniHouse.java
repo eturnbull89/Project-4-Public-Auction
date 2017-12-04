@@ -69,14 +69,9 @@ class MiniHouse extends Thread
                 //If the object that is read is a bid handel bidding procedure.
                 if(passed instanceof Bid)
                 {
-                    /*System.out.println("passed bid info:");
-                    System.out.println(((Bid) passed).getItemBiddingOn().getName());
-                    System.out.println(((Bid) passed).getBidAmount());
-                    System.out.println(((Bid) passed).getBidStatus());*/
-
                     //Create a bid to pass back to the agent.
                     Bid passedBid = bidProtocol(centralIn, centralOut, (Bid) passed);
-                    //System.out.println("Current bid passing back to Agent " + passedBid.getItemBiddingOn().getCurrentBid());
+                    //System.out.println("Current bid passing back to Agent " + passedBid.getItemBiddingOn().getHighestBid());
 
                     System.out.println("passed bid status: "+ passedBid.getBidStatus());
 
@@ -89,13 +84,14 @@ class MiniHouse extends Thread
                     if(passedBid.getBidStatus().equals("acceptance"))
                     {
                        countdown(passedBid);
+
                        printArrayList(this.items);
                     }
                 }
 
-                else if(passed instanceof itemEnquire)
+                else if(passed instanceof ItemEnquire)
                 {
-                    boolean inList = itemExists(((itemEnquire) passed).getSerialNumber());
+                    boolean inList = itemExists(((ItemEnquire) passed).getSerialNumber());
 
                     outFromHouse.writeObject(inList);
                 }
@@ -137,6 +133,9 @@ class MiniHouse extends Thread
                     }
 
                 }
+
+                //If the auction house is being closed start the closing protocol.
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> closingProtocol(centralOut)));
             }
         }
         catch (IOException | ClassNotFoundException e)
@@ -166,40 +165,26 @@ class MiniHouse extends Thread
             //Index of the item based on the items id.
             int itemIndex = findIndex(item.getItemSerialNum());
 
-            boolean bidderKeysMatch = false;
-
-            if(items.get(itemIndex).getHighestBidderKey() != null)
-            {
-                bidderKeysMatch = items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey());
-            }
-
             boolean previousBidder = items.get(itemIndex).getHighestBidderKey() == null ||
                     !(items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey()));
 
-            /*System.out.println("AH Items List SN: " + items.get(itemIndex).getItemSerialNum() +
-                    "\nBid item SN: " + item.getItemSerialNum());
-
-            System.out.println("item being bid on: " +item.getName());*/
+            boolean highestBid = items.get(itemIndex).getHighestBid() < agentBid.getBidAmount() &&
+                                 items.get(itemIndex).getMinimumBid() < agentBid.getBidAmount();
 
             //If the agents bid amount is greater then the current bid create a new hold.
-            if (items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount() && previousBidder)
+            if (highestBid && previousBidder)
             {
 
                 //Create a transaction to pass to auction central.
                 AuctionTransaction hold = new AuctionTransaction(agentKey, bidAmount, -1);
-                //System.out.println("Created auction transaction");
 
                 try
                 {
                     //Write the Transaction object to central
                     toCentral.writeObject(hold);
 
-                    //System.out.println("Wrote the auction transaction to auction central");
-
                     //Get centrals confirmation of hold.
                     holdConfirm = (Boolean) fromCentral.readObject();
-
-                    //System.out.println("Received confirmation of hold");
 
                 }
                 catch (IOException | ClassNotFoundException e)
@@ -210,7 +195,7 @@ class MiniHouse extends Thread
                 //If we were able to place a hold on the agents account and the currentBid is still less then the
                 //agents bid. I did this extra check to make sure that the agents bid was still the highest bid after
                 //the possible time delay waiting for central to transmit its hold confirmation not sure if it is needed.
-                if (holdConfirm && items.get(itemIndex).getCurrentBid() < agentBid.getBidAmount())
+                if (holdConfirm && items.get(itemIndex).getHighestBid() < agentBid.getBidAmount())
                 {
                     //Transaction that will be used to release the previous agents funds.
                     AuctionTransaction release = null;
@@ -220,19 +205,19 @@ class MiniHouse extends Thread
                     synchronized (items.get(itemIndex))
                     {
                         //Set the previousBid amount to the current bid amount.
-                        items.get(itemIndex).setPreviousBid(items.get(itemIndex).getCurrentBid());
+                        items.get(itemIndex).setPreviousBid(items.get(itemIndex).getHighestBid(), houseKey);
 
                         //Set the previousBidderKey to current highestBidderKey value.
-                        items.get(itemIndex).setPreviousBidderKey(items.get(itemIndex).getHighestBidderKey());
+                        items.get(itemIndex).setPreviousBidderKey(items.get(itemIndex).getHighestBidderKey(), houseKey);
 
                         //Update the items current bid amount.
-                        items.get(itemIndex).setCurrentBid(bidAmount, houseKey);
+                        items.get(itemIndex).setHighestBid(bidAmount, houseKey);
 
                         //Update the current bid amount in the item.
-                        item.setCurrentBid(bidAmount, houseKey);
+                        item.setHighestBid(bidAmount, houseKey);
 
                         //Update the highestBidderKey to the agents key
-                        items.get(itemIndex).setHighestBidKey(agentKey);
+                        items.get(itemIndex).setHighestBidKey(agentKey, houseKey);
 
                         if (items.get(itemIndex).getPreviousBidderKey() != null)
                         {
@@ -261,7 +246,7 @@ class MiniHouse extends Thread
                 }
 
                 //If we were able to confirm a hold but the current bid changed in the time it took to get a confirmation
-                else if (holdConfirm && items.get(itemIndex).getCurrentBid() > agentBid.getBidAmount())
+                else if (holdConfirm && items.get(itemIndex).getHighestBid() > agentBid.getBidAmount())
                 {
                     //Create a new transaction to release the agents previous hold.
                     Transaction releaseAgent = new Transaction(agentKey, bidAmount, 1);
@@ -278,7 +263,7 @@ class MiniHouse extends Thread
 
                     AuctionItem higherBidItem = items.get(itemIndex);
 
-                    agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
+                    agentBid.getItemBiddingOn().setHighestBid(higherBidItem.getHighestBid(), houseKey);
 
 
                     //Set the bid status to pass.
@@ -303,7 +288,7 @@ class MiniHouse extends Thread
             {
                 AuctionItem higherBidItem = items.get(itemIndex);
 
-                agentBid.getItemBiddingOn().setCurrentBid(higherBidItem.getCurrentBid(), houseKey);
+                agentBid.getItemBiddingOn().setHighestBid(higherBidItem.getHighestBid(), houseKey);
 
                 agentBid.setBidStatus("reject");
             }
@@ -331,16 +316,22 @@ class MiniHouse extends Thread
             @Override
             public void run()
             {
-                if(agentBid.getBidAmount() == item.getCurrentBid())
+                if(agentBid.getBidAmount() == item.getHighestBid())
                 {
                     //Add the item to the winners list.
                     winnerList.add(item);
-                    AuctionTransaction withdraw = new AuctionTransaction(item.getHighestBidderKey(), item.getCurrentBid(), 0);
 
-                    try {
+                    AuctionTransaction withdraw = new AuctionTransaction(item.getHighestBidderKey(),
+                                                                         item.getHighestBid(), 0);
+
+                    try
+                    {
                         centralOut.writeObject(withdraw);
+
                         centralOut.reset();
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e)
+                    {
                         e.printStackTrace();
                     }
 
@@ -366,8 +357,7 @@ class MiniHouse extends Thread
         for(AuctionItem item : ar)
         {
             System.out.print(item.getName());
-            System.out.print(", items serial number = " + item.getItemSerialNum());
-            System.out.println(", items id number = "+ item.getItemId());
+            System.out.println(", items serial number = " + item.getItemSerialNum());
         }
     }
 
@@ -409,5 +399,34 @@ class MiniHouse extends Thread
         }
 
         return false;
+    }
+
+    private void closingProtocol(ObjectOutputStream toCentral)
+    {
+
+        for (AuctionItem item : items)
+        {
+            if (item.getHighestBidderKey() != null)
+            {
+
+                Integer key = item.getHighestBidderKey();
+
+                int amount = item.getHighestBid();
+
+                AuctionTransaction release = new AuctionTransaction(key, amount, 1);
+
+                try
+                {
+                    toCentral.writeObject(release);
+                }
+
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        System.out.println("Early close caught, closing protocol completed.");
     }
 }
