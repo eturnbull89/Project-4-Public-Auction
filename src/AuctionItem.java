@@ -1,191 +1,178 @@
 import java.io.Serializable;
-import java.util.Random;
 
+/**
+ * =============================================
+ * Project 4 Public Auction - CS 351 UNM
+ * @authors Eric Turnbull  | eturnbull@unm.edu
+ *          Zach Fleharty  |
+ *          Tristin Glunt  | tglunt@unm.edu
+ *          Adam Spanswick |
+ * =============================================
+ *
+ * AuctionItem is used to create items that will be bid on by Agents. Each AuctionItem has a number of variables that
+ * are used a different points in the program. name is used to identify an item to an Agent when they are bidding.
+ * itemSerialNum is a number that is used to make each item identifiable when searching for it. minimumBid is the value
+ * set at the start that indicates the lowest amount an Agent can initially bid. highestBid is used to keep track of an
+ * items highest bid amount, is volatile to check if highest bid is updated by between agent bids. auctionKey is used
+ * to hold an auctionHouses auction key, used to update an items highest bid amount. highestBidderKey is used to hold
+ * bidderKey of the agent with the highest bid. previousBid is used to hold the previous highest bid amount.
+ * previousBidderKey is used to hold the previous highest bidder key. All but auctionKey have a getter to get the values
+ * stored. highestBid, previousBid, highestBidderKey, previousBidderKey also have setters but to set the values in them
+ * a key must be passed that matches the key given to the item at creation.
+ */
 class AuctionItem implements Serializable
 {
-    //Used to indicate which house the item is stored at?
-    private final int auctionHouseId;
-
-    //Name of the given auction house, is passed to auction house as a command line argument.
     private final String name;
-
-    //Used to id the item in question, is the items index in its list
-    private final int itemId;
 
     private final int itemSerialNum;
 
-    //The initial minimum bid amount, this is initially given in the sale list.
     private final int minimumBid;
 
-    //Field to keep track of an items current bid amount, is volatile to check if current bid is updated by
-    //between agent bids.
-    private volatile int currentBid;
+    private volatile int highestBid;
 
-    //Field to hold an auctionHouses auction key, used to update an items current bid amount.
     private final Integer auctionKey;
 
-    //Field that will hold the bidderKey of the agent with the highest bid.
     private Integer highestBidderKey;
 
-    //Field that will hold the previous highest bid.
     private int previousBid;
 
-    //Field that will hold the previous highest bidder key.
     private Integer previousBidderKey;
 
-    //***********************************
-    //int houseId - an int that is used to represent the auction houses id.
-    //String itemName - a String that identifies an item.
-    //int id - an items id value, is the value of the items array index for look up.
-    //int minimumBid - the value that an items minimum bid should be set to.
-    //Integer key - the key that auction key will be set to.
-    //AuctionItem is a constructor used to set the values of an auction items variables. It sets an auctionHouseId to
-    //the value of houseId passed to it, the name field to the itemName string passed to it, etc. It also sets the
-    //value of current bid to zero to indicate no bids are currently on it.
-    //***********************************
-    AuctionItem(int houseId, String itemName, int id, int minimumBid, Integer key, int serial)
+    /**
+     * @param itemName - A String that identifies an item.
+     * @param minimumBid  - The value that an items minimum bid should be set to.
+     * @param key - The key that auction key will be set to.
+     * @param serial - An items Id number.
+     * AuctionItem is a constructor that is used to set an AuctionItems fields.
+     */
+    AuctionItem(String itemName, int minimumBid, Integer key, int serial)
     {
-        //Set the auctionHouseId variable.
-        this.auctionHouseId = houseId;
-
-        //Set the items name field
         this.name = itemName;
 
-        //Set the item id field.
-        this.itemId = id;
-
-        //Set the items minimum bid amount.
         this.minimumBid = minimumBid;
 
-        //Set the items auction key variable
         this.auctionKey = key;
 
-        //Set the current bid amount to zero.
-        this.currentBid = 0;
+        this.highestBid = 0;
 
         this.itemSerialNum = serial;
     }
 
-    //***********************************
-    //getAuctionHouseId returns an int.
-    //getAuctionHouseId returns the auctionHouseId that this item is tied to.
-    //***********************************
-    int getAuctionHouseId()
-    {
-        return this.auctionHouseId;
-    }
-
-    //***********************************
-    //getItemId returns an int.
-    //getItemId returns this items id.
-    //***********************************
-    int getItemId()
-    {
-        return this.itemId;
-    }
-
-    //***********************************
-    //getMinimumBid returns an int.
-    //getMinimumBid returns an items minimum bid amount.
-    //***********************************
+    /**
+     * @return getMinimumBid returns an int.
+     * getMinimumBid returns an items minimum bid amount.
+     */
     int getMinimumBid()
     {
         return  this.minimumBid;
     }
 
-    //***********************************
-    //getCurrentBid returns an int.
-    //getCurrentBid returns the current bid amount of an item.
-    //***********************************
-    int getCurrentBid()
+    /**
+     * @return getHighestBid returns an int.
+     * getHighestBid returns the current bid amount of an item.
+     */
+    int getHighestBid()
     {
-        return this.currentBid;
+        return this.highestBid;
     }
 
-    //***********************************
-    //int amount - Value that current bid should be set to.
-    //Integer auctionKey - An auction houses auction key.
-    //setCurrentBid has no return value.
-    //setCurrentBid is used to set an items current bid amount. It starts by checking that the auction key passed to it
-    //is the same auction key stored in the item. If it is it sets the current bid field to the amount passed to it. It
-    //is synchronized to prevent multiple threads from changing the value at once.
-    //***********************************
-    void setCurrentBid(int amount, Integer auctionKey)
+    /**
+     * @param amount - Value that current bid should be set to.
+     * @param auctionKey - An auction houses auction key.
+     * setHighestBid is used to set an items highest bid amount. It starts by checking that the auction key passed to it
+     * is the same auction key stored in the item. If it is, it sets the highest bid field to the amount passed to it.
+     */
+    void setHighestBid(int amount, Integer auctionKey)
     {
-        //Check if the auction key passed is the same as the auction key the item was created with.
         if(auctionKey.equals(this.auctionKey))
         {
-            //Set the current bid amount to the amount passed.
-            this.currentBid = amount;
+            this.highestBid = amount;
         }
     }
 
-    //***********************************
-    //getName returns a string.
-    //getName returns an items name field.
-    //***********************************
+    /**
+     * @return getName returns a string.
+     * getName returns an items name field.
+     */
     String getName()
     {
         return this.name;
     }
 
-    //***********************************
-    //Integer key - The key that highestBidKey will be set to.
-    //setHighestBidKey has no return value.
-    //setHighestBidKey sets the value of highestBidderKey to the key value passed to it.
-    //***********************************
-    void setHighestBidKey(Integer key)
+    /**
+     * @param key - The key that highestBidKey will be set to.
+     * @param auctionKey - An auction houses auction key.
+     * setHighestBidKey sets the value of highestBidderKey to the key value passed to it. It checks if the auction key
+     * stored in the item is the same as the key that is passed to it. If so it then updates the highestBidderKey field
+     * to the key passed to it.
+     */
+    void setHighestBidKey(Integer key, Integer auctionKey)
     {
-        this.highestBidderKey = key;
+        if(auctionKey.equals(this.auctionKey))
+        {
+            this.highestBidderKey = key;
+        }
     }
 
-    //***********************************
-    //getHighestBidderKey returns an Integer.
-    //getHighestBidderKey returns the value of highestBidderKey
-    //***********************************
+    /**
+     * @return getHighestBidderKey returns an Integer.
+     * getHighestBidderKey returns the value of highestBidderKey
+     */
     Integer getHighestBidderKey()
     {
         return this.highestBidderKey;
     }
 
-    //***********************************
-    //Integer key - The key value that previousBidderKey will be set to.
-    //setPreviousBidderKey has no return value.
-    //setPreviousBidderKey is used to set the value of previousBidderKey to the value passed to it.
-    //***********************************
-    void setPreviousBidderKey(Integer key)
+    /**
+     * @param key - The key value that previousBidderKey will be set to.
+     * @param auctionKey - An auction houses auction key.
+     * setPreviousBidderKey is used to set the value of previousBidderKey to the value passed to it. It checks that
+     * the auctionKey passed is the same as the auction key stored in the item. If so it changes the value of
+     * previousBidderKey to value passed.
+     */
+    void setPreviousBidderKey(Integer key, Integer auctionKey)
     {
-        this.previousBidderKey = key;
+        if(auctionKey.equals(this.auctionKey))
+        {
+            this.previousBidderKey = key;
+        }
     }
 
-    //***********************************
-    //getPreviousBidderKey returns an Integer
-    //getPreviousBidderKey is used to get the value of previousBidderKey.
-    //***********************************
+    /**
+     * @return getPreviousBidderKey returns an Integer
+     * getPreviousBidderKey is used to get the value of previousBidderKey.
+     */
     Integer getPreviousBidderKey()
     {
         return this.previousBidderKey;
     }
 
-    //***********************************
-    //int amount - An int that previousBid will be set to.
-    //setPreviousBid has no return value.
-    //setPreviousBid is used to the value of previousBid to the amount passed to it.
-    //***********************************
-    void setPreviousBid(int amount)
+    /**
+     * @param amount - An int that previousBid will be set to.
+     * @param auctionKey - An auction houses auction key.
+     * setPreviousBid is used to the value of previousBid to the amount passed to it.
+     */
+    void setPreviousBid(int amount, Integer auctionKey)
     {
-        this.previousBid = amount;
+        if(auctionKey.equals(this.auctionKey))
+        {
+            this.previousBid = amount;
+        }
     }
 
-    //***********************************
-    //getPreviousBid returns an int
-    //getPreviousBid is used to get the value of previousBid.
-    //***********************************
+    /**
+     * @return getPreviousBid returns an int
+     * getPreviousBid is used to get the value of previousBid.
+     */
     int getPreviousBid()
     {
         return this.previousBid;
     }
 
+    /**
+     * @return getItemSerialNum returns an int.
+     * getItemSerialNum is used to get the value store in itemSerialNum.
+     */
     int getItemSerialNum()
     {
         return this.itemSerialNum;
