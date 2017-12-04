@@ -19,6 +19,8 @@ import java.util.*;
  *
  */
 
+
+//TODO store won items and display whenever agent closes
 public class Agent
 {
     private String agentName = "";
@@ -35,6 +37,7 @@ public class Agent
 
     private ArrayList<Bid> currentBids = new ArrayList<>();
     private ArrayList<AuctionItem> listOfAuctionItems;
+    private ArrayList<AuctionItem> wonItems = new ArrayList<>();
 
     /**
      *
@@ -63,6 +66,8 @@ public class Agent
         agent.registerWithBank(bankHostName, bankPortNumber);
         agent.registerWithAuctionCentral(auctionCentralHostName, auctionCenPortNumber);
         agent.pollUserInput();
+        System.out.println("Thank you for playing, here are your won items:");
+        agent.printListOfAuctionItems(agent.wonItems, 1);
         System.out.println("Agent exiting...");
         System.exit(1);
     }
@@ -190,6 +195,17 @@ public class Agent
             {
                 while (!listOfAuctionHouses.isEmpty())
                 {
+                    if(!checkBidWithBank(1))
+                    {
+                        if(!checkBidStillGoing(lastItemBid))
+                        {
+                            System.out.println("\nYou have no funds available.");
+                            System.out.println("Thank you for playing, here are your won items:");
+                            printListOfAuctionItems(wonItems, 1);
+                            System.exit(1);
+                        }
+                    }
+
                     System.out.println((char) 27 + "[33m\nMain Menu\\AuctionHouses" + (char) 27 + "[0m");
                     listOfAuctionHouses = requestListOfAuctionHouses();
                     printListOfAuctionHouses(listOfAuctionHouses);
@@ -250,6 +266,9 @@ public class Agent
             {
                 if(!checkBidStillGoing(lastItemBid))
                 {
+                    System.out.println("\nYou have no funds available.");
+                    System.out.println("Thank you for playing, here are your won items:");
+                    printListOfAuctionItems(wonItems, 1);
                     System.exit(1);
                 }
             }
@@ -257,7 +276,7 @@ public class Agent
 
             System.out.println((char) 27 + "[33m\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName()
                                 + (char) 27 + "[0m");
-            printListOfAuctionItems(listOfAuctionItems);
+            printListOfAuctionItems(listOfAuctionItems, 0);
             System.out.println("Which auction item would you like to bid on? Or type Exit to leave auction house");
 
             Scanner sc = new Scanner(System.in);
@@ -434,10 +453,15 @@ public class Agent
             outCurrentAuctionHouse.reset();
 
             boolean amWinner = (Boolean) inCurrentAuctionHouse.readObject();
-            if(amWinner)
+            if (amWinner)
+            {
+                wonItems.add(item);
                 System.out.print((char) 27 + "[32mCongrats, you won the bid for " + item.getName() + "!" + (char) 27 + "[0m");
+            }
             else
+            {
                 System.out.print((char) 27 + "[31mSorry, you lost the bid for " + item.getName() + "." + (char) 27 + "[0m");
+            }
         }
         catch(IOException e)
         {
@@ -654,14 +678,17 @@ public class Agent
         return null;
     }
 
-    private void printListOfAuctionItems(ArrayList<AuctionItem> auctionItems)
+    private void printListOfAuctionItems(ArrayList<AuctionItem> auctionItems, int test)
     {
         int counter = 0;
 
         for(AuctionItem ai : auctionItems)
         {
             counter++;
-            System.out.println(counter + ". " + ai.getName() + " | Current Bid: " + ai.getHighestBid());
+            if(test == 0)
+                System.out.println(counter + ". " + ai.getName() + " | Current Bid: " + ai.getHighestBid());
+            else if(test == 1)
+                System.out.println(counter + ". " + ai.getName());
         }
     }
 
