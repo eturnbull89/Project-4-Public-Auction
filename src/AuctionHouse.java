@@ -110,7 +110,7 @@ public class AuctionHouse
 
     //***********************************
     //String houseHost - The location that this auction house is located at, i.e. localhost or an ip address.
-    //int housePort - port number that this auction house is located at.
+    //int housePort - port number that this auction house is located at
     //String centralHost - The location that auction central is located at, i.e. localhost or an ip address.
     //int centralPort - the port number that auction central is located at.
     //register has no return value.
