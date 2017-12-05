@@ -10,7 +10,6 @@ public class BankAccount extends Account implements Serializable
 {
     private Double balance = 100d;
     private Integer bankKey;
-    private String name = null;
     private int fundsInHold = 0;
     private Integer accountNumber;
 

@@ -28,9 +28,9 @@ class Confirmation implements Serializable
      */
     Confirmation(int id, int key)
     {
-       this.publicId = id;
+        this.publicId = id;
 
-       this.auctionKey = key;
+        this.auctionKey = key;
     }
 
     /**

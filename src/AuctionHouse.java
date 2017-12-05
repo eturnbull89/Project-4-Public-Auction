@@ -106,7 +106,7 @@ public class AuctionHouse
 
         else
         {
-            System.out.println("invalid index given, setting to default");
+            System.out.println("Invalid index given, setting to default");
         }
 
         ServerSocket serverSocket;
@@ -129,7 +129,7 @@ public class AuctionHouse
                 if(!registered)
                 {
                     house.register(house.houseHost, house.housePort, house.centralHost, centralOut,
-                                   centralIn);
+                            centralIn);
 
                     house.itemLists(house.houseReg);
 
@@ -139,14 +139,14 @@ public class AuctionHouse
                 Socket clientSocket = serverSocket.accept();
 
                 MiniHouse mini = new MiniHouse(clientSocket, house.items, house.houseReg.getAuctionKey(),
-                                               centralOut, centralIn);
+                        centralOut, centralIn);
 
                 mini.start();
             }
         }
         catch (IOException e)
         {
-            System.err.println("could not listen on port: "+ house.housePort);
+            System.err.println("Could not listen on port: "+ house.housePort);
         }
     }
 
@@ -178,7 +178,7 @@ public class AuctionHouse
             {
                 this.houseReg = (Confirmation) in.readObject();
 
-                System.out.println("house Registered, id is = "+this.houseReg.getPublicId());
+                System.out.println("House Registered, id is = "+this.houseReg.getPublicId());
 
             }
 

@@ -14,7 +14,7 @@ public class AuctionCentralProtocol
     private final int WITHDRAW = 0;//The transaction completed and the money needs to be withdrawn
     private final int RELEASE = 1;//Release money hold
 
-    //object handles sending transactions to the bank and recieving data from bank
+    //object handles sending transactions to the bank and receiving data from bank
     private TalkToBank bankConnection;
 
     private Random keyGenerator = new Random(1000);
@@ -85,7 +85,7 @@ public class AuctionCentralProtocol
         int publicID = keyGenerator.nextInt(100); //not sure what this is. Sets to random integer for now
 
 
-        AuctionCentralServer.debug("created secretKey and publicID" + secretKey + " " + publicID);
+        AuctionCentralServer.debug("Created secretKey and publicID" + secretKey + " " + publicID);
 
 
         Confirmation houseConfirmation = new Confirmation(publicID, secretKey);
@@ -135,9 +135,9 @@ public class AuctionCentralProtocol
                     AuctionCentralServer.debug("Result sent");
                 }
                 else
-                    {
-                        out.writeObject(false);
-                    }
+                {
+                    out.writeObject(false);
+                }
             }
         } catch (IOException | ClassNotFoundException e)
         {
@@ -159,7 +159,7 @@ public class AuctionCentralProtocol
      * transactions when the funds are withdrawn.
      */
     private void houseDisconnected(Registration houseReg, Integer secretKey){
-        System.out.println("lost connection to house");
+        System.out.println("Lost connection to the Auction House");
         HouseToSecretKey.remove(houseReg,secretKey);
 
         ArrayList<Transaction> AgentsToReleaseHolds = AgentsWithFundsInHold.get(houseReg);
@@ -215,7 +215,7 @@ public class AuctionCentralProtocol
 
         try
         {
-            AuctionCentralServer.debug("sent bidkey to agent: " + bidKey );
+            AuctionCentralServer.debug("Sent bidkey to agent: " + bidKey );
 
 
 
@@ -225,7 +225,7 @@ public class AuctionCentralProtocol
             while (true)
             {
 
-                AuctionCentralServer.debug("waiting for agent communication");
+                AuctionCentralServer.debug("Waiting for agent communication");
 
 
                 out.flush();
@@ -250,13 +250,13 @@ public class AuctionCentralProtocol
                     houses.removeAll(housesToRemove);
                     housesToRemove.clear();
 
-                    AuctionCentralServer.debug("sent house list to agent");
+                    AuctionCentralServer.debug("Sent house list to agent");
                     out.writeObject(houses);
                     out.reset();
                 }
             }
         }catch(IOException e){
-            System.out.println("lost connection to agent");
+            System.out.println("Lost connection to agent");
         }
         catch(ClassNotFoundException e)
         {

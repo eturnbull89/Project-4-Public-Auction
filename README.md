@@ -26,3 +26,17 @@ some auction houses so you can start playing!
 
 ==============================================
 
+===============How To Use Bank================
+
+The Bank server is run from the BankManager class. BankManager takes two command line arguments, the first is the port number
+that AuctionCentralServer will connect to and the second argument is the port number for the Agent to connect to. BankManager
+will accept multiple connections for Agent's so multiple agents can create accounts at the same time. It also supports multiple
+connections for AuctionCentralServer in case the connection is lost and needs to be reestablished. After the Bank connects to
+AuctionCentral it supports operations to put funds in hold (they bid on a item), release the funds back to the agents account
+(they lost a auction) and withdrawing the funds from the agents account (when they won a auction). When BankManager established
+a connection to the Agent it takes the name passed in and uses that to create a unique account number, unique bankKey and sets
+all agent's balance to 100. BankManager also checks for duplicate account numbers and bankKeys every time a new account is set up
+to make sure they are all unique. When BankManager is being run it prints out certain statements that are not test statements but
+are used to see where the program is currently executing.
+
+==============================================

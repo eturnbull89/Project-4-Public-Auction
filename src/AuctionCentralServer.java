@@ -25,7 +25,7 @@ public class AuctionCentralServer
 
         if(args.length != numOfArgs)
         {
-            System.out.println("incorrect number of arguments");
+            System.out.println("Incorrect number of arguments");
             System.exit(-1);
         }
 
@@ -39,12 +39,12 @@ public class AuctionCentralServer
         //establish connection with bank
         try
         {
-            debug("connecting to bank...");
+            debug("Connecting to bank...");
 
             Socket BankSocket = new Socket(bankHost, bankPort);
             TalkToBank BankConnection = new TalkToBank(BankSocket);
 
-            debug("connected to bank!");
+            debug("Connected to bank!");
 
             ACP = new AuctionCentralProtocol(BankConnection);
 

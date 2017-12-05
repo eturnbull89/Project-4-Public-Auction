@@ -9,7 +9,7 @@ public class TalkToBank
 
     ObjectOutputStream out; //output stream to send data to the bank
 
-    ObjectInputStream in; //input stream to recieve data from the bank
+    ObjectInputStream in; //input stream to receive data from the bank
 
     public TalkToBank(Socket bankSocket){
 
@@ -24,7 +24,7 @@ public class TalkToBank
             in = new ObjectInputStream(bankSocket.getInputStream());
 
         }catch (IOException e){
-            System.out.println("cant talk to bank.");
+            System.out.println("Can't talk to bank.");
             e.printStackTrace();
         }
     }

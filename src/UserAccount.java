@@ -1,28 +1,27 @@
 import java.io.Serializable;
 
 /**
- * Created by adam on 11/24/17.
+ * Adam Spanswick
+ * UserAccount class is used by a Agent to create a Bank account. The agent sets the name field and then sends the object
+ * to the Bank where the Bank reads the name and sets up a new account for that agent.
  */
 public class UserAccount implements Serializable
 {
   private String accountName;
 
-  //********************************************************************************************************************
-  //Parameters:
-  //  1. String name is the name of the account holder
-  //
-  //Constructor sets the accountName to name
-  //********************************************************************************************************************
+  /**
+   * Constructor sets the accountName to name
+   * @param name is the agent's name
+   */
   public UserAccount(String name)
   {
     accountName = name;
   }
 
-  //********************************************************************************************************************
-  //Parameters: none
-  //
-  //Method returns the accountName string
-  //********************************************************************************************************************
+  /**
+   * Method returns the accountName string
+   * @return the string for the account name
+   */
   public String getAccountName()
   {
     return accountName;
