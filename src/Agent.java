@@ -13,14 +13,12 @@ import java.util.*;
  *          Adam Spanswick |
  * =============================================
  *
- * Agent Client:
- *
+ * Agent: The client interface for the Public Auction.
  *
  *
  */
 
 
-//TODO store won items and display whenever agent closes
 public class Agent
 {
     private String agentName = "";
@@ -40,7 +38,12 @@ public class Agent
     private ArrayList<AuctionItem> wonItems = new ArrayList<>();
 
     /**
-     *
+     * reads in the arguments from the command line when the program is launched. these arguments are
+     * respectively listed below, and if you don't input the correct number the program will close and ask
+     * you to please relaunch with the correct arguments. If you enter a bad ip add. we have a connectException
+     * in our methods to setup the sockets with the servers, and the program will close. Otherwise if the input
+     * is great, main sets up the Bank and Auction central sockets, registers with each, and starts
+     * asking for user input.
      *
      */
 
