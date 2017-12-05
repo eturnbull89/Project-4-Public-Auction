@@ -2,10 +2,10 @@
 
  =============================================
  Project 4 Public Auction - CS 351 UNM
- @authors Tristin Glunt  | tglunt@unm.edu
+ @authors Tristin Glunt   | tglunt@unm.edu
            Zach Fleharty  |
-           Eric Turnbull  |
-           Adam Spanswick |
+           Eric Turnbull  | eturnbull@unm.edu
+           Adam Spanswick | aspanswick@unm.edu
 =============================================
 
 ===============How To Use Agent===============
