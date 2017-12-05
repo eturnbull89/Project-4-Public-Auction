@@ -84,20 +84,20 @@ public class BankServerCommunication implements Runnable
                     Transaction newTrans = (Transaction) inObj;
 
                     System.out.println("Auction Central Bank Key: ");
-                    System.out.println(newTrans.bankKey);
+                    System.out.println(newTrans.getBankKey());
 
-                    if (newTrans.request == -1) //Place amount in hold
+                    if (newTrans.getRequest() == -1) //Place amount in hold
                     {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).setHoldBalance(newTrans.amount));
+                        out.writeObject(bank.getAccount(newTrans.getBankKey()).setHoldBalance(newTrans.getAmount()));
                     }
-                    else if (newTrans.request == 1) //Release the funds in hold back to user's account
+                    else if (newTrans.getRequest() == 1) //Release the funds in hold back to user's account
                     {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).clearHold(newTrans.amount));
+                        out.writeObject(bank.getAccount(newTrans.getBankKey()).clearHold(newTrans.getAmount()));
                     }
-                    else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
+                    else if (newTrans.getRequest() == 0) //Withdraw the funds in hold from the user's account
                     {
                         System.out.println("Withdrawing from auction won");
-                        out.writeObject(bank.getAccount(newTrans.bankKey).deductHoldAmount(newTrans.amount));
+                        out.writeObject(bank.getAccount(newTrans.getBankKey()).deductHoldAmount(newTrans.getAmount()));
                     }
                 }
                 else if (inObj instanceof String)
