@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-public class AuctionCentralProtocol
+class AuctionCentralProtocol
 {
 
     //Used to tell the status of a bid.
@@ -24,7 +23,7 @@ public class AuctionCentralProtocol
     //TalkToAuctionHouse uses this hashMap, that's the reason it's package-protected and
     //not private. NOTE: multiple threads may be reading from and writing to hash map
     //both actions should be synchronized and performed atomically
-    static HashMap<Integer, Integer> BidKeyToBankKey = new HashMap<>();
+    private static HashMap<Integer, Integer> BidKeyToBankKey = new HashMap<>();
 
     /*Maps AuctionHouses to all agents who have funds in hold for specific auctionItems in there house. This hashMap is
     * a safety measure against houses disconnecting or ending without releasing or withdrawing funds.*/
@@ -32,18 +31,16 @@ public class AuctionCentralProtocol
 
     //Used as a lock for when data is written to and read from the BidKeyToBankKey mapping
     //Multiple threads will access this data
-    public static Object keyLock = new Object();
-
-
+    private static final Object keyLock = new Object();
 
     /*Holds the registration objects from all AuctionHouses registered with this auctionCentral.
     * Registration holds, 1)house name 2)port number 3)host name*/
-    static HashMap<Registration, Integer> HouseToSecretKey = new HashMap<>();
+    private static HashMap<Registration, Integer> HouseToSecretKey = new HashMap<>();
 
     /**Handles communication between the Clients,
      * @param bankSocket Used to communicate to the bank when AuctionHouses send requests to place money holds
      * */
-    public AuctionCentralProtocol(TalkToBank bankSocket)
+    AuctionCentralProtocol(TalkToBank bankSocket)
     {
         bankConnection = bankSocket;
     }
@@ -69,14 +66,16 @@ public class AuctionCentralProtocol
      *
      * @param in ObjectInputStream used to recieve objects from the AuctionHouse
      *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException - Thrown if I/O could not be established.
+     *
+     * @throws ClassNotFoundException - Thrown if a class does not exits or is not serialized.
      */
-    public void CommunicateWithHouse(Registration houseReg, ObjectInputStream in, ObjectOutputStream out)
+    void CommunicateWithHouse(Registration houseReg, ObjectInputStream in, ObjectOutputStream out)
     {
         Integer secretKey;
 
         //Assign secretKey to a value not already generated
+        //noinspection StatementWithEmptyBody
         while(HouseToSecretKey.containsValue((secretKey = keyGenerator.nextInt(100)))){}
         HouseToSecretKey.put(houseReg, secretKey);
 
@@ -98,6 +97,7 @@ public class AuctionCentralProtocol
             AuctionCentralServer.debug("Sent confirmation back to house" + publicID);
 
 
+            //noinspection InfiniteLoopStatement
             while (true)
             {
                 Object fromHouse;
@@ -186,10 +186,10 @@ public class AuctionCentralProtocol
      *
      * @param in ObjectInputStream used to receive objects from the agent
      *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException - Thrown if I/O Could not be established.
+     * @throws ClassNotFoundException - Thrown if the class could not be found or it is not serialized.
      */
-    public void CommunicateWithAgent(Integer agentBankKey, ObjectInputStream in,  ObjectOutputStream out)
+    void CommunicateWithAgent(Integer agentBankKey, ObjectInputStream in,  ObjectOutputStream out)
     {
         /*First add bidkeyToBankKey mapping
         * Generate BidKey
@@ -202,6 +202,7 @@ public class AuctionCentralProtocol
         AuctionCentralServer.debug("New agent sent bankKey: " + agentBankKey);
 
         //generate a bidkey that has not already been generated
+        //noinspection StatementWithEmptyBody
         while(BidKeyToBankKey.containsKey((bidKey = keyGenerator.nextInt(100)))){}
 
         AuctionCentralServer.debug("Agents BidKey: " + bidKey);
@@ -222,6 +223,7 @@ public class AuctionCentralProtocol
             out.flush();
             out.writeObject(bidKey);
             Object fromAgent;
+            //noinspection InfiniteLoopStatement
             while (true)
             {
 
@@ -255,7 +257,10 @@ public class AuctionCentralProtocol
                     out.reset();
                 }
             }
-        }catch(IOException e){
+        }
+
+        catch(IOException e)
+        {
             System.out.println("Lost connection to agent");
         }
         catch(ClassNotFoundException e)
