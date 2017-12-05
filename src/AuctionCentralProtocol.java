@@ -164,7 +164,7 @@ public class AuctionCentralProtocol
 
         ArrayList<Transaction> AgentsToReleaseHolds = AgentsWithFundsInHold.get(houseReg);
         for(Transaction trans: AgentsToReleaseHolds){
-            Transaction releaseHold = new Transaction(trans.bankKey,trans.amount,RELEASE);
+            Transaction releaseHold = new Transaction(trans.getBankKey(),trans.getAmount(),RELEASE);
 
             bankConnection.RequestFromBank(releaseHold);
         }
@@ -280,11 +280,11 @@ public class AuctionCentralProtocol
      * */
     private void UpdateFundsInHold(Registration registration, Transaction transaction){
 
-        if(transaction.request == PENDING)
+        if(transaction.getRequest() == PENDING)
         {
             AgentsWithFundsInHold.get(registration).add(transaction);
         }
-        else if(transaction.request == WITHDRAW || transaction.request == RELEASE)
+        else if(transaction.getRequest() == WITHDRAW || transaction.getRequest() == RELEASE)
         {
             //get the transaction to remove
             for(Transaction trans: AgentsWithFundsInHold.get(registration))
@@ -292,7 +292,7 @@ public class AuctionCentralProtocol
                 /*Agent may have more than one transaction with the auctionHouse so find one transaction which applies
                 * to this specific agent by matching bank Key's and a transaction with the same amount so it can be
                 * removed from the list thus keeping the proper amount of funds in hold for the agent.*/
-                if(trans.bankKey.equals(transaction.bankKey) && trans.amount == transaction.amount){
+                if(trans.getBankKey().equals(transaction.getBankKey()) && trans.getAmount() == transaction.getAmount()){
                     AgentsWithFundsInHold.remove(registration,trans);
                     return;
                 }
