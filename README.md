@@ -1,14 +1,15 @@
 # Project-4-Public-Auction
 
- * =============================================
- * Project 4 Public Auction - CS 351 UNM
- * @authors Tristin Glunt  | tglunt@unm.edu
- *          Zach Fleharty  |
- *          Eric Turnbull  |
- *          Adam Spanswick |
- * =============================================
+ =============================================
+ Project 4 Public Auction - CS 351 UNM
+ @authors Tristin Glunt  | tglunt@unm.edu
+           Zach Fleharty  |
+           Eric Turnbull  |
+           Adam Spanswick |
+=============================================
 
 ===============How To Use Agent===============
+
 The clients interface (Agent) has been configured to run on a linux machine. Specifically, system out statements
 are color coded and if run on a Windows machine may seem buggy. So, please do not take into consideration the buggyness
 on a Windows machine, as per the classes guidelines we write code to run or be graded on the machines in lab. Thanks!
