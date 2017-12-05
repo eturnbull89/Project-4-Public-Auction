@@ -18,7 +18,6 @@ import java.util.*;
  *
  */
 
-
 public class Agent
 {
     private String agentName = "";
@@ -79,8 +78,8 @@ public class Agent
      * registerWithBank: setup the sockets with the bankHostName and bankPortNumber,
      * then create the output and input streams. Setup an account with the bank, will
      * get the bank key back.
-     * @param bankHostName
-     * @param bankPortNumber
+     * @param bankHostName - host name that bank is located at.
+     * @param bankPortNumber - port number that bank is hosting at.
      */
     private void registerWithBank(String bankHostName, int bankPortNumber)
     {
@@ -108,11 +107,7 @@ public class Agent
             System.out.println("No proper server setup.");
             System.exit(1);
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
+        catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -122,10 +117,10 @@ public class Agent
      * registerWithAuctionCentral: setup the sockets with the auction central host name and port number,
      * then create the output and input streams. Register with the auction central that we're wanting to bid,
      * get the bidding key back from the auction central
-     * @param acHostName
-     * @param acPortNum
+     * @param acHostName - host name that auction central is located at.
+     * @param acPortNum - port number that auction central is hosting at.
      */
-    public void registerWithAuctionCentral(String acHostName, int acPortNum)
+    private void registerWithAuctionCentral(String acHostName, int acPortNum)
     {
         try
         {
@@ -139,11 +134,8 @@ public class Agent
             biddingKey = (Integer) inAuctionCen.readObject();
             System.out.println(biddingKey.toString());
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
+
+        catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -246,14 +238,14 @@ public class Agent
     }
 
     /**
-     * joinAuctionHouse: joins an auction house given the list from aution central, displays the items
+     * joinAuctionHouse: joins an auction house given the list from auction central, displays the items
      * given from the auction house joined. Checks if the users last item bidding on is still going and if they have
      * any funds left, if not, shuts down the client. Otherwise, lets the user decide which item they would like
      * to bid on and enters them into bidding for that item.
-     * @param listOfAuctionHouses
-     * @param auctionHouseNum
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @param listOfAuctionHouses - An array list of the active auction houses.
+     * @param auctionHouseNum - Number that allows an auction house to be chosen from by the user.
+     * @throws IOException - Thrown if I/O could not be established.
+     * @throws ClassNotFoundException - Thrown if the used class does not exist or is not serialized.
      */
     private void joinAuctionHouse(ArrayList<Registration> listOfAuctionHouses, int auctionHouseNum)
             throws IOException, ClassNotFoundException
@@ -292,7 +284,7 @@ public class Agent
                 if(itemNumber < listOfAuctionItems.size())
                 {
                     AuctionItem itemBiddingOn = listOfAuctionItems.get(itemNumber);
-                    bidOnAuctionItem(itemBiddingOn, auctionHouse.getHouseName(), itemNumber);
+                    bidOnAuctionItem(itemBiddingOn, auctionHouse.getHouseName());
                 }
                 else
                 {
@@ -314,10 +306,10 @@ public class Agent
      * runs out for bidding) or the user enters exit. After every bid, we ask the AuctionHouse for the list
      * of current auction items, ensuring we have the most up to date items with the highest bid and items
      * available to bid on. Whenever a bid
-     * @param itemBiddingOn
-     * @param auctionHouseName
+     * @param itemBiddingOn - The auction item that the agent wants to bid on.
+     * @param auctionHouseName - The name of an auction house.
      */
-    private void bidOnAuctionItem(AuctionItem itemBiddingOn, String auctionHouseName, int itemNumber)
+    private void bidOnAuctionItem(AuctionItem itemBiddingOn, String auctionHouseName)
     {
         try
         {
@@ -432,11 +424,7 @@ public class Agent
 
             }
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
+        catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -444,7 +432,7 @@ public class Agent
 
     /**
      * inquireWinner: asks the auction houses if they won the auction for a given item.
-     * @param item
+     * @param item - An auction item.
      */
     private void inquireWinner(AuctionItem item)
     {
@@ -466,11 +454,7 @@ public class Agent
                 System.out.print((char) 27 + "[31mSorry, you lost the bid for " + item.getName() + "." + (char) 27 + "[0m");
             }
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
+        catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -480,8 +464,8 @@ public class Agent
     /**
      * checkBid: check if a bid for the passed in auction item has already been created, if so, return that bid.
      * otherwise
-     * @param itemBiddingOn
-     * @return
+     * @param itemBiddingOn - An auction item that an agent is bidding on.
+     * @return checkBid returns a Bid object.
      */
     private Bid checkBid(AuctionItem itemBiddingOn)
     {
@@ -506,10 +490,10 @@ public class Agent
 
     /**
      * checkBidStillGoing: enquires with the auction house on if an items still being bid on
-     * @param item
-     * @return
+     * @param item - An auction item that an agent is bidding on.
+     * @return checkBidStillGoing returns a boolean
      */
-    public boolean checkBidStillGoing(AuctionItem item)
+    private boolean checkBidStillGoing(AuctionItem item)
     {
         ItemEnquire itEnq = new ItemEnquire(item.getItemSerialNum());
 
@@ -531,7 +515,7 @@ public class Agent
      * requestListOfAuctionItems:
      * send a string over the auction house out stream. read in the input from auction house,
      * set the input as the list of auction items.
-     * @return the list of auction items in this auction house
+     * update the list of auction items in this auction house
      */
     private void updateListOfAuctionItems()
     {
@@ -544,11 +528,7 @@ public class Agent
             listOfAuctionItems = (ArrayList<AuctionItem>) inCurrentAuctionHouse.readObject();
 
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
+        catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -556,8 +536,8 @@ public class Agent
 
     /**
      * inquireBankBalance:
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException - I/O to bank could not be established.
+     * @throws ClassNotFoundException - Exception caused by a class not existing or not serialized.
      */
     private void inquireBankBalance()
             throws IOException, ClassNotFoundException
@@ -574,7 +554,7 @@ public class Agent
      * getBidOnSameItem loops through our arraylist of bids and gets the
      * bid on the same item if it exists
      * @param itemSRN the items serial number
-     * @return
+     * @return getBidOnSameItem returns a Bid object
      */
     private Bid getBidOnSameItem(int itemSRN)
     {
@@ -591,8 +571,8 @@ public class Agent
     /**
      * checkBidWithBank: verifies the bid is valid with the bank,
      * mainly used to close an agent with no funds
-     * @param bid
-     * @return
+     * @param bid - Amount that checks if a bid amount is valid.
+     * @return checkBidWithBank returns a boolean
      */
     private boolean checkBidWithBank(int bid)
     {
@@ -605,11 +585,7 @@ public class Agent
 
             return (Boolean) inBank.readObject();
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
+        catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -621,7 +597,7 @@ public class Agent
      * take the auctionHouse registration and create the auction house socket and communication streams
      * @param auctionHouse the auction house we're connecting to
      */
-    public void setCurrentAuctionHouseStreams(Registration auctionHouse)
+    private void setCurrentAuctionHouseStreams(Registration auctionHouse)
     {
         try
         {
@@ -653,11 +629,7 @@ public class Agent
 
             return listOfAuctionHouses;
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch(ClassNotFoundException e)
+        catch(IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }
@@ -668,8 +640,8 @@ public class Agent
     /**
      * getMatchingItem: loops through our list of auction items and gets the one that matches
      * the passed in item
-     * @param item
-     * @return
+     * @param item - The auction item
+     * @return getMatchingItem returns an AuctionItem
      */
     private AuctionItem getMatchingItem(AuctionItem item)
     {
