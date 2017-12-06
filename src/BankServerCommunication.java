@@ -12,18 +12,16 @@ public class BankServerCommunication implements Runnable
     Bank bank;
     ObjectOutputStream out;
     ObjectInputStream in;
-    Socket client;
-    Object inObj;
 
     /**
      * BankServerCommunication: Constructor sets the object input and output streams and starts a new thread for every
      * BankServerCommunication object created.
-     * @param bank
-     * @param client
-     * @param out
-     * @param in
+     * @param bank - Bank object that will act as an agents personal bank.
+     * @param client - Socket used to communicate with the agent.
+     * @param out - Object output stream used for passing objects to an agent.
+     * @param in - Object input stream used for receiving objects from an agent.
      */
-    public BankServerCommunication(Bank bank, Socket client, ObjectOutputStream out, ObjectInputStream in)
+    BankServerCommunication(Bank bank, Socket client, ObjectOutputStream out, ObjectInputStream in)
     {
         this.out = out;
         this.in = in;
@@ -41,7 +39,6 @@ public class BankServerCommunication implements Runnable
             }
         }
 
-        this.client = client;
         this.bank = bank;
         Thread bsc = new Thread(this);
         bsc.start();
@@ -60,11 +57,12 @@ public class BankServerCommunication implements Runnable
     {
         try
         {
+            //noinspection InfiniteLoopStatement
             while (true)
             {
                 out.flush();
                 System.out.println("Waiting for a incoming object");
-                inObj = in.readObject();
+                Object inObj = in.readObject();
                 System.out.println("Success");
 
                 if (inObj instanceof UserAccount)
