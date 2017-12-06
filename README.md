@@ -40,3 +40,27 @@ set up to make sure they are all unique. When BankManager is being run it prints
 but are used to see where the program is currently executing.
 
 ==============================================
+
+==========How To Use Auction House============
+
+An Auction House is run from the AuctionHouse class.
+
+Each AuctionHouse takes 5 command line arguments in this order: host name an auction house will be at, the port number
+an auction house will be hosting from, the visual name of the house, the port number that auction central is located at,
+the host name that auction central is located at, an integer between 1-3 that indicates what the house should sell from
+a set list. A value of 1 means the house will sell art, 2 = books, and 3 = cars, any other value will default to the
+house selling art. One example of this that we have used for testing is:
+
+localHost 1040 Cars 1032 localHost 3
+
+IMPORTANT: An auction house has to be created after the bank server and auction central server have been created, making
+an auction house before will cause an error.
+
+Once an auction house has been set up there is no other direct input needed on the agents end. All interaction with an
+auction house is done via Agent. There are some print statements that occur during the operation of the programs. If
+the value given was not between 1-3 it will print that the house is using its default value. It also indicates that the
+house was registered with auction central. When the bidding on an item is done it prints that it is updating the
+winners list that is maintained. These statements were kept in to verify that the server was running.
+
+==============================================
+
