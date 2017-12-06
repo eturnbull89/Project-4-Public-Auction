@@ -17,7 +17,7 @@ public class AcctKey implements Serializable
    * @param accountNumber is the account number
    * @param balance is the balance
    */
-  public AcctKey(Integer key, Integer accountNumber, Double balance)
+  AcctKey(Integer key, Integer accountNumber, Double balance)
   {
     this.acctNum = accountNumber;
     this.acctKey = key;
@@ -37,11 +37,11 @@ public class AcctKey implements Serializable
    * Method returns the acctNum
    * @return the account number
    */
-  public Integer getAccountNumber() { return acctNum; }
+  Integer getAccountNumber() { return acctNum; }
 
   /**
    * Method returns the balance
    * @return the account balance
    */
-  public Double getBalance() { return balance; }
+  Double getBalance() { return balance; }
 }
