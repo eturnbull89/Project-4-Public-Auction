@@ -1,15 +1,31 @@
 import java.io.Serializable;
 
 /**
- * Created by tristin on 12/1/2017.
+ * =============================================
+ * Project 4 Public Auction - CS 351 UNM
+ * @authors Tristin Glunt  | tglunt@unm.edu
+ *          Zach Fleharty  |
+ *          Eric Turnbull  | eturnbull@unm.edu
+ *          Adam Spanswick |
+ * =============================================
+ *
+ * WinnerInquire is used by an Agent to check if they have won the bid on an item. A WinnerInquire object has the variable
+ * auctionItem. This is the AuctionItem that the agent wants to enquire about. ItemEnquire has a
+ * constructor that is used to set the auction item and the Agents bidding key.
  */
-public class WinnerInquire implements Serializable
+
+class WinnerInquire implements Serializable
 {
     private final AuctionItem auctionItem;
 
     private final int biddingKey;
 
-    public WinnerInquire(AuctionItem auctionItem, int biddingKey)
+    /**
+     * WinnerInquire: constructor
+     * @param auctionItem item we want to know if we won or not
+     * @param biddingKey bidding key for the agent creating the object
+     */
+    WinnerInquire(AuctionItem auctionItem, int biddingKey)
     {
         this.auctionItem = auctionItem;
 
@@ -17,12 +33,12 @@ public class WinnerInquire implements Serializable
     }
 
 
-    public int getBiddingKey()
+    int getBiddingKey()
     {
         return biddingKey;
     }
 
-    public AuctionItem getAuctionItem()
+    AuctionItem getAuctionItem()
     {
         return auctionItem;
     }

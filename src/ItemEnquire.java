@@ -9,7 +9,7 @@ import java.io.Serializable;
  *          Adam Spanswick |
  * =============================================
  *
- * ItemEnquire is used by an Agent to check if they have won the bid on an item. An ItemEnquire object has the variable
+ * ItemEnquire is used by an Agent to check if an item is still being auction. An ItemEnquire object has the variable
  * serialNumber. This is the serial number of the AuctionItem that the agent wants to enquire about. ItemEnquire has a
  * constructor that is used to set serialNumber and a getter for serialNumber.
  */

@@ -9,10 +9,11 @@
 =============================================
 
 ===============How To Use Agent===============
-
 The clients interface (Agent) has been configured to run on a linux machine. Specifically, system out statements
 are color coded and if run on a Windows machine may seem buggy. So, please do not take into consideration the buggyness
 on a Windows machine, as per the classes guidelines we write code to run or be graded on the machines in lab. Thanks!
+
+java -cp agent.jar {Bank host name} {Auction Central Host Name} {Bank Port Number} {Auction Central Port Number} {UserName}
 
 1. Ensure the Bank server and Auction Central server are properly setup.
 2. When running the jar, ensure the first argument is the Bank server IP, the second argument is the Auction Central
