@@ -57,7 +57,6 @@ public class BankServerCommunication implements Runnable
     {
         try
         {
-            //noinspection InfiniteLoopStatement
             while (true)
             {
                 out.flush();
