@@ -5,7 +5,7 @@ import java.io.Serializable;
  * UserAccount class is used by a Agent to create a Bank account. The agent sets the name field and then sends the object
  * to the Bank where the Bank reads the name and sets up a new account for that agent.
  */
-public class UserAccount implements Serializable
+class UserAccount implements Serializable
 {
   private String accountName;
 
@@ -13,7 +13,7 @@ public class UserAccount implements Serializable
    * Constructor sets the accountName to name
    * @param name is the agent's name
    */
-  public UserAccount(String name)
+  UserAccount(String name)
   {
     accountName = name;
   }
@@ -22,7 +22,7 @@ public class UserAccount implements Serializable
    * Method returns the accountName string
    * @return the string for the account name
    */
-  public String getAccountName()
+  String getAccountName()
   {
     return accountName;
   }
