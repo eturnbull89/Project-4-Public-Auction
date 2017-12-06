@@ -42,5 +42,4 @@ class WinnerInquire implements Serializable
     {
         return auctionItem;
     }
-
 }

@@ -103,7 +103,7 @@ class MiniHouse extends Thread
 
                     if(passedBid.getBidStatus().equals("acceptance"))
                     {
-                       countdown(passedBid);
+                        countdown(passedBid);
                     }
                 }
 
@@ -215,7 +215,7 @@ class MiniHouse extends Thread
                     !(items.get(itemIndex).getHighestBidderKey().equals(agentBid.getAgentBidKey()));
 
             boolean highestBid = items.get(itemIndex).getHighestBid() < agentBid.getBidAmount() &&
-                                 items.get(itemIndex).getMinimumBid() < agentBid.getBidAmount();
+                    items.get(itemIndex).getMinimumBid() < agentBid.getBidAmount();
 
             if (highestBid && previousBidder)
             {
@@ -352,7 +352,7 @@ class MiniHouse extends Thread
                     winnerList.add(item);
 
                     AuctionTransaction withdraw = new AuctionTransaction(item.getHighestBidderKey(),
-                                                                         item.getHighestBid(), 0);
+                            item.getHighestBid(), 0);
 
                     try
                     {

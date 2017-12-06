@@ -18,7 +18,7 @@ public class Bank implements Serializable
    * createNewAccount: setups up a new account for a agent by calling newAccount with the name provided.
    * @param name is the name of the account holder
    */
-  public void createNewAccount(String name)
+  void createNewAccount(String name)
   {
     newAccount(name);
   }
@@ -28,7 +28,7 @@ public class Bank implements Serializable
    * @param key is the agents ket to lookup their account
    * @return the account associated with the given key
    */
-  public BankAccount getAccount(Integer key)
+  BankAccount getAccount(Integer key)
   {
     return accountList.get(key);
   }
@@ -38,7 +38,7 @@ public class Bank implements Serializable
    * @param name the agents name
    * @return the bank key
    */
-  public Integer getBankKey(String name)
+  Integer getBankKey(String name)
   {
     return bankKeys.get(name);
   }
@@ -47,7 +47,7 @@ public class Bank implements Serializable
    * newAccount: creates a new account for a agent by creating a new BankAccount object which generates a bank key and
    * account number. The new account is then added to the Bank's account list and the bank key is put into a map with the
    * agents name.
-   * @param name
+   * @param name - Name of the agent.
    */
   private void newAccount(String name)
   {
@@ -76,16 +76,15 @@ public class Bank implements Serializable
 
     if(duplicates.size() < accountNumbers.size())
     {
-      handleDuplicateAccountNumbers(accountTocheck, duplicates);
+      handleDuplicateAccountNumbers(accountTocheck);
     }
   }
 
   /**
    * handleDuplicateAccountNumbers: Creates a new account number for the account with a duplicate account number. Then
    * checks again
-   * @param duplicates
    */
-  private void handleDuplicateAccountNumbers(BankAccount accountToCheck, Set duplicates)
+  private void handleDuplicateAccountNumbers(BankAccount accountToCheck)
   {
     //Change account number
     accountToCheck.newAccountNumber();
@@ -107,15 +106,14 @@ public class Bank implements Serializable
 
     if(duplicates.size() < keys.size())
     {
-      handleDuplicateBankKeys(accountTocheck, duplicates);
+      handleDuplicateBankKeys(accountTocheck);
     }
   }
 
   /**
    * handleDuplicateBankKeys: Creates a new bank key for the account with a duplicate bank key. Then checks again.
-   * @param duplicates
    */
-  private void handleDuplicateBankKeys(BankAccount accountToCheck, Set duplicates)
+  private void handleDuplicateBankKeys(BankAccount accountToCheck)
   {
     //Change bank key
     accountToCheck.newBankKey();

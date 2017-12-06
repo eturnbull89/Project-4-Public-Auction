@@ -3,18 +3,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class TalkToBank
+class TalkToBank
 {
-    Socket bankSocket; //Socket Connected to the bank, not sure if socket is needed
 
     ObjectOutputStream out; //output stream to send data to the bank
 
-    ObjectInputStream in; //input stream to recieve data from the bank
+    ObjectInputStream in; //input stream to receive data from the bank
 
-    public TalkToBank(Socket bankSocket){
-
-        this.bankSocket = bankSocket;
-
+    TalkToBank(Socket bankSocket)
+    {
         try
         {
             out = new ObjectOutputStream(bankSocket.getOutputStream());
@@ -23,13 +20,16 @@ public class TalkToBank
 
             in = new ObjectInputStream(bankSocket.getInputStream());
 
-        }catch (IOException e){
-            System.out.println("cant talk to bank.");
+        }
+        catch (IOException e)
+        {
+            System.out.println("Can't talk to bank.");
             e.printStackTrace();
         }
     }
 
-    public boolean RequestFromBank(Transaction trans){
+    boolean RequestFromBank(Transaction trans)
+    {
         boolean result = false;
 
         try
@@ -40,10 +40,9 @@ public class TalkToBank
             //expects the bank to return a boolean value denoting the success of the transaction
             result = (boolean) in.readObject();
 
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e)
+        }
+
+        catch (IOException | ClassNotFoundException e)
         {
             e.printStackTrace();
         }

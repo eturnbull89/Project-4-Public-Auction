@@ -12,18 +12,16 @@ public class BankServerCommunication implements Runnable
     Bank bank;
     ObjectOutputStream out;
     ObjectInputStream in;
-    Socket client;
-    Object inObj;
 
     /**
      * BankServerCommunication: Constructor sets the object input and output streams and starts a new thread for every
      * BankServerCommunication object created.
-     * @param bank
-     * @param client
-     * @param out
-     * @param in
+     * @param bank - Bank object that will act as an agents personal bank.
+     * @param client - Socket used to communicate with the agent.
+     * @param out - Object output stream used for passing objects to an agent.
+     * @param in - Object input stream used for receiving objects from an agent.
      */
-    public BankServerCommunication(Bank bank, Socket client, ObjectOutputStream out, ObjectInputStream in)
+    BankServerCommunication(Bank bank, Socket client, ObjectOutputStream out, ObjectInputStream in)
     {
         this.out = out;
         this.in = in;
@@ -41,7 +39,6 @@ public class BankServerCommunication implements Runnable
             }
         }
 
-        this.client = client;
         this.bank = bank;
         Thread bsc = new Thread(this);
         bsc.start();
@@ -60,11 +57,12 @@ public class BankServerCommunication implements Runnable
     {
         try
         {
+            //noinspection InfiniteLoopStatement
             while (true)
             {
                 out.flush();
                 System.out.println("Waiting for a incoming object");
-                inObj = in.readObject();
+                Object inObj = in.readObject();
                 System.out.println("Success");
 
                 if (inObj instanceof UserAccount)
@@ -84,20 +82,20 @@ public class BankServerCommunication implements Runnable
                     Transaction newTrans = (Transaction) inObj;
 
                     System.out.println("Auction Central Bank Key: ");
-                    System.out.println(newTrans.bankKey);
+                    System.out.println(newTrans.getBankKey());
 
-                    if (newTrans.request == -1) //Place amount in hold
+                    if (newTrans.getRequest() == -1) //Place amount in hold
                     {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).setHoldBalance(newTrans.amount));
+                        out.writeObject(bank.getAccount(newTrans.getBankKey()).setHoldBalance(newTrans.getAmount()));
                     }
-                    else if (newTrans.request == 1) //Release the funds in hold back to user's account
+                    else if (newTrans.getRequest() == 1) //Release the funds in hold back to user's account
                     {
-                        out.writeObject(bank.getAccount(newTrans.bankKey).clearHold(newTrans.amount));
+                        out.writeObject(bank.getAccount(newTrans.getBankKey()).clearHold(newTrans.getAmount()));
                     }
-                    else if (newTrans.request == 0) //Withdraw the funds in hold from the user's account
+                    else if (newTrans.getRequest() == 0) //Withdraw the funds in hold from the user's account
                     {
                         System.out.println("Withdrawing from auction won");
-                        out.writeObject(bank.getAccount(newTrans.bankKey).deductHoldAmount(newTrans.amount));
+                        out.writeObject(bank.getAccount(newTrans.getBankKey()).deductHoldAmount(newTrans.getAmount()));
                     }
                 }
                 else if (inObj instanceof String)

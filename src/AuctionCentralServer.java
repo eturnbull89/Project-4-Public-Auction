@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class AuctionCentralServer
 {
 
-    static Boolean DEBUG = true; //When true debug mode is on
+    private static Boolean DEBUG = true; //When true debug mode is on
 
     //I'm not sure if this will come in useful but it may be useful to keep
     //a reference to all executing threads on hand
@@ -25,7 +25,7 @@ public class AuctionCentralServer
 
         if(args.length != numOfArgs)
         {
-            System.out.println("incorrect number of arguments");
+            System.out.println("Incorrect number of arguments");
             System.exit(-1);
         }
 
@@ -39,12 +39,12 @@ public class AuctionCentralServer
         //establish connection with bank
         try
         {
-            debug("connecting to bank...");
+            debug("Connecting to bank...");
 
             Socket BankSocket = new Socket(bankHost, bankPort);
             TalkToBank BankConnection = new TalkToBank(BankSocket);
 
-            debug("connected to bank!");
+            debug("Connected to bank!");
 
             ACP = new AuctionCentralProtocol(BankConnection);
 
@@ -59,10 +59,7 @@ public class AuctionCentralServer
                 //Creates new Socket with a new connected client
                 Socket clientSocket = ACServer.accept();
 
-
                 debug("New Client Recieved");
-
-
 
                 //Set up communication channels with the new Socket
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
@@ -103,7 +100,7 @@ public class AuctionCentralServer
         }
     }
 
-    public static void debug(String str){
+    static void debug(String str){
         if(DEBUG) System.out.println(str);
     }
 }

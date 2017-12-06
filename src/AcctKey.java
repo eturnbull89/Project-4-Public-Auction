@@ -1,7 +1,9 @@
 import java.io.Serializable;
 
 /**
- * Created by adam on 11/24/17.
+ * Adam Spanswick
+ * The AcctKey class stores the agent's unique account key, unique account number and their balance. It is used in communication
+ * between the Agent and the Bank.
  */
 public class AcctKey implements Serializable
 {
@@ -9,40 +11,37 @@ public class AcctKey implements Serializable
   private Integer acctNum;
   private Double balance;
 
-  //********************************************************************************************************************
-  //Parameters:
-  //  1. Integer key is the unique account key
-  //
-  //Constructor sets the acctKey to Key
-  //********************************************************************************************************************
-  public AcctKey(Integer key, Integer accountNumber, Double balance)
+  /**
+   * Constructor sets the acctKey to Key, the accountNum to accountNumber and the balance to balance
+   * @param key is the account key
+   * @param accountNumber is the account number
+   * @param balance is the balance
+   */
+  AcctKey(Integer key, Integer accountNumber, Double balance)
   {
     this.acctNum = accountNumber;
     this.acctKey = key;
     this.balance = balance;
   }
 
-  //********************************************************************************************************************
-  //Parameters: none
-  //
-  //Method returns the acctKey
-  //********************************************************************************************************************
+  /**
+   * Method returns the acctKey
+   * @return the accountKey
+   */
   public Integer getKey()
   {
     return acctKey;
   }
 
-  //********************************************************************************************************************
-  //Parameters: none
-  //
-  //Method returns the acctNum
-  //********************************************************************************************************************
-  public Integer getAccountNumber() { return acctNum; }
+  /**
+   * Method returns the acctNum
+   * @return the account number
+   */
+  Integer getAccountNumber() { return acctNum; }
 
-  //********************************************************************************************************************
-  //Parameters: none
-  //
-  //Method returns the balance
-  //********************************************************************************************************************
-  public Double getBalance() { return balance; }
+  /**
+   * Method returns the balance
+   * @return the account balance
+   */
+  Double getBalance() { return balance; }
 }

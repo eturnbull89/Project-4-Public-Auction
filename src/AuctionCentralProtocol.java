@@ -1,15 +1,11 @@
-
-import com.sun.org.apache.regexp.internal.RE;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-public class AuctionCentralProtocol
+class AuctionCentralProtocol
 {
 
     //Used to tell the status of a bid.
@@ -17,7 +13,7 @@ public class AuctionCentralProtocol
     private final int WITHDRAW = 0;//The transaction completed and the money needs to be withdrawn
     private final int RELEASE = 1;//Release money hold
 
-    //object handles sending transactions to the bank and recieving data from bank
+    //object handles sending transactions to the bank and receiving data from bank
     private TalkToBank bankConnection;
 
     private Random keyGenerator = new Random(1000);
@@ -27,23 +23,24 @@ public class AuctionCentralProtocol
     //TalkToAuctionHouse uses this hashMap, that's the reason it's package-protected and
     //not private. NOTE: multiple threads may be reading from and writing to hash map
     //both actions should be synchronized and performed atomically
-    static HashMap<Integer, Integer> BidKeyToBankKey = new HashMap<>();
+    private static HashMap<Integer, Integer> BidKeyToBankKey = new HashMap<>();
 
+    /*Maps AuctionHouses to all agents who have funds in hold for specific auctionItems in there house. This hashMap is
+    * a safety measure against houses disconnecting or ending without releasing or withdrawing funds.*/
+    private HashMap<Registration,ArrayList<Transaction>> AgentsWithFundsInHold = new HashMap<>();
 
     //Used as a lock for when data is written to and read from the BidKeyToBankKey mapping
     //Multiple threads will access this data
-    public static Object keyLock = new Object();
-
-
+    private static final Object keyLock = new Object();
 
     /*Holds the registration objects from all AuctionHouses registered with this auctionCentral.
     * Registration holds, 1)house name 2)port number 3)host name*/
-    static HashMap<Registration, Integer> HouseToSecretKey = new HashMap<>();
+    private static HashMap<Registration, Integer> HouseToSecretKey = new HashMap<>();
 
     /**Handles communication between the Clients,
      * @param bankSocket Used to communicate to the bank when AuctionHouses send requests to place money holds
      * */
-    public AuctionCentralProtocol(TalkToBank bankSocket)
+    AuctionCentralProtocol(TalkToBank bankSocket)
     {
         bankConnection = bankSocket;
     }
@@ -69,22 +66,25 @@ public class AuctionCentralProtocol
      *
      * @param in ObjectInputStream used to recieve objects from the AuctionHouse
      *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException - Thrown if I/O could not be established.
+     *
+     * @throws ClassNotFoundException - Thrown if a class does not exits or is not serialized.
      */
-    public void CommunicateWithHouse(Registration houseReg, ObjectInputStream in, ObjectOutputStream out)
+    void CommunicateWithHouse(Registration houseReg, ObjectInputStream in, ObjectOutputStream out)
     {
         Integer secretKey;
 
         //Assign secretKey to a value not already generated
+        //noinspection StatementWithEmptyBody
         while(HouseToSecretKey.containsValue((secretKey = keyGenerator.nextInt(100)))){}
         HouseToSecretKey.put(houseReg, secretKey);
 
+        AgentsWithFundsInHold.put(houseReg,new ArrayList<>());
 
         int publicID = keyGenerator.nextInt(100); //not sure what this is. Sets to random integer for now
 
 
-        AuctionCentralServer.debug("created secretKey and publicID" + secretKey + " " + publicID);
+        AuctionCentralServer.debug("Created secretKey and publicID" + secretKey + " " + publicID);
 
 
         Confirmation houseConfirmation = new Confirmation(publicID, secretKey);
@@ -97,6 +97,7 @@ public class AuctionCentralProtocol
             AuctionCentralServer.debug("Sent confirmation back to house" + publicID);
 
 
+            //noinspection InfiniteLoopStatement
             while (true)
             {
                 Object fromHouse;
@@ -105,7 +106,9 @@ public class AuctionCentralProtocol
 
                 if (fromHouse instanceof AuctionTransaction)
                 {
-                    AuctionCentralServer.debug("Transaction recived. ");
+                    AuctionCentralServer.debug("Transaction received. ");
+
+
                     AuctionTransaction ClientBid = (AuctionTransaction) fromHouse;
 
                     //Grabbing the key Atomic
@@ -119,7 +122,9 @@ public class AuctionCentralProtocol
                     AuctionCentralServer.debug("Bidkey " + ClientBid.getBidKey() + " to bank key " + key);
 
                     Transaction trans = new Transaction(key, ClientBid.getAmount(), ClientBid.getRequest());
-                    
+
+                    UpdateFundsInHold(houseReg,trans); //keeps AgentsWithFundsInHold updated
+
                     AuctionCentralServer.debug("sending transaction to bank");
 
                     Boolean result = bankConnection.RequestFromBank(trans);
@@ -130,25 +135,40 @@ public class AuctionCentralProtocol
                     AuctionCentralServer.debug("Result sent");
                 }
                 else
-                    {
-                        out.writeObject(false);
-                    }
+                {
+                    out.writeObject(false);
+                }
             }
         } catch (IOException | ClassNotFoundException e)
         {
-            AuctionCentralServer.debug("lost connection to house");
-            HouseToSecretKey.remove(houseReg,secretKey);
-
-            AuctionCentralServer.debug("houses Left Now:");
-            int i = 1;
-            for(Registration r: HouseToSecretKey.keySet()){
-                AuctionCentralServer.debug(i + ") " + r.getHouseName());
-                i++;
-            }
+            houseDisconnected(houseReg,secretKey);
         }
     }
 
+    /**Protocol for when a house Disconnects from the AuctionCentralServer
+     * First the houses registration and secret key needs to be removed from the houseToSecretKey mapping. There are not
+     * many potential problems with this data remaining in the mapping other than security reasons to prevent a client
+     * from writing a program to continuously connect and disconnect to cause a memory overflow.
+     *
+     * Next any agents that connected to that auctionHouse may still have funds in hold with this auctionHouse. These
+     * funds need to be released. The AgentsWithFundsInHold contains a mapping for every registered house to an
+     * ArrayList of agents who currently have funds in hold with that house. The ArrayList is of type transaction so it
+     * will hold the agents bank key and the amount they have on hold specifically with the house. That way only the
+     * funds which need to be released from that house will be released and not all there funds. See documentation on
+     * The updateFundsInHold method which takes care of placing transactions within this arrayList value and removing
+     * transactions when the funds are withdrawn.
+     */
+    private void houseDisconnected(Registration houseReg, Integer secretKey){
+        System.out.println("Lost connection to the Auction House");
+        HouseToSecretKey.remove(houseReg,secretKey);
 
+        ArrayList<Transaction> AgentsToReleaseHolds = AgentsWithFundsInHold.get(houseReg);
+        for(Transaction trans: AgentsToReleaseHolds){
+            Transaction releaseHold = new Transaction(trans.getBankKey(),trans.getAmount(),RELEASE);
+
+            bankConnection.RequestFromBank(releaseHold);
+        }
+    }
     /**Executes protocol for communicating with an Agent
      * Agent sends the first object, Bank key.
      * A bid Key is generated for the Agent and the mapping from the bid key to bank key is added to the hashMap
@@ -166,10 +186,10 @@ public class AuctionCentralProtocol
      *
      * @param in ObjectInputStream used to receive objects from the agent
      *
-     * @throws IOException
-     * @throws ClassNotFoundException
+     * @throws IOException - Thrown if I/O Could not be established.
+     * @throws ClassNotFoundException - Thrown if the class could not be found or it is not serialized.
      */
-    public void CommunicateWithAgent(Integer agentBankKey, ObjectInputStream in,  ObjectOutputStream out)
+    void CommunicateWithAgent(Integer agentBankKey, ObjectInputStream in,  ObjectOutputStream out)
     {
         /*First add bidkeyToBankKey mapping
         * Generate BidKey
@@ -182,6 +202,7 @@ public class AuctionCentralProtocol
         AuctionCentralServer.debug("New agent sent bankKey: " + agentBankKey);
 
         //generate a bidkey that has not already been generated
+        //noinspection StatementWithEmptyBody
         while(BidKeyToBankKey.containsKey((bidKey = keyGenerator.nextInt(100)))){}
 
         AuctionCentralServer.debug("Agents BidKey: " + bidKey);
@@ -195,17 +216,18 @@ public class AuctionCentralProtocol
 
         try
         {
-            AuctionCentralServer.debug("sent bidkey to agent: " + bidKey );
+            AuctionCentralServer.debug("Sent bidkey to agent: " + bidKey );
 
 
 
             out.flush();
             out.writeObject(bidKey);
             Object fromAgent;
+            //noinspection InfiniteLoopStatement
             while (true)
             {
 
-                AuctionCentralServer.debug("waiting for agent communication");
+                AuctionCentralServer.debug("Waiting for agent communication");
 
 
                 out.flush();
@@ -230,17 +252,57 @@ public class AuctionCentralProtocol
                     houses.removeAll(housesToRemove);
                     housesToRemove.clear();
 
-                    AuctionCentralServer.debug("sent house list to agent");
+                    AuctionCentralServer.debug("Sent house list to agent");
                     out.writeObject(houses);
                     out.reset();
                 }
             }
-        }catch(IOException e){
-            System.out.println("lost connection to agent");
+        }
+
+        catch(IOException e)
+        {
+            System.out.println("Lost connection to agent");
         }
         catch(ClassNotFoundException e)
         {
             e.printStackTrace();
+        }
+    }
+
+    /**Handles keeping the AgentsWithFundsInHold mapping up to date.
+     * Method is called whenever any AuctionTransaction comes in from an AuctionHouse. This houses registration maps to
+     * an ArrayList of current agents with funds in hold. This ArrayList is of type transaction. Before the transaction
+     * is sent to the bank this method is called with the transaction and the registration. if The request is to place
+     * a hold i.e. PENDING then the transaction is added to the ArrayList which the houses registration maps to. If the
+     * request is to WITHDRAW or RELEASE the hold the appropriate transaction in the ArrayList is found and removed from
+     * it.
+     * NOTE: When method assumes that any WITHDRAW or RELEASE transaction precedes an equivalent transaction to place
+     * funds in hold. There never should be an instance where one of these transactions comes through before an
+     * equivalent PENDING transaction comes through. In case the situation may occur there is a debug statement
+     * to identify that no transaction was found. The DEBUG boolean must be set to true to see this print statement.
+     * @param registration HouseRegistration of the house from which this AuctionTransaction Came from
+     * @param transaction The Transaction created from the AuctionTransaction which will added or removed from the ArrayList.
+     * */
+    private void UpdateFundsInHold(Registration registration, Transaction transaction){
+
+        if(transaction.getRequest() == PENDING)
+        {
+            AgentsWithFundsInHold.get(registration).add(transaction);
+        }
+        else if(transaction.getRequest() == WITHDRAW || transaction.getRequest() == RELEASE)
+        {
+            //get the transaction to remove
+            for(Transaction trans: AgentsWithFundsInHold.get(registration))
+            {
+                /*Agent may have more than one transaction with the auctionHouse so find one transaction which applies
+                * to this specific agent by matching bank Key's and a transaction with the same amount so it can be
+                * removed from the list thus keeping the proper amount of funds in hold for the agent.*/
+                if(trans.getBankKey().equals(transaction.getBankKey()) && trans.getAmount() == transaction.getAmount()){
+                    AgentsWithFundsInHold.remove(registration,trans);
+                    return;
+                }
+            }
+            AuctionCentralServer.debug("No Transaction found");
         }
     }
 }

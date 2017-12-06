@@ -10,14 +10,13 @@ public class BankAccount extends Account implements Serializable
 {
     private Double balance = 100d;
     private Integer bankKey;
-    private String name = null;
     private int fundsInHold = 0;
     private Integer accountNumber;
 
     /**
      * BankAccount: constructor setsup a new account by creating a 9 digit account number and 3 digit bank key.
      */
-    public BankAccount()
+    BankAccount()
     {
         generateAccountNumber();
         generatebankKey();
@@ -25,7 +24,7 @@ public class BankAccount extends Account implements Serializable
 
     /**
      * getBankKey: returns the bankKey
-     * @return
+     * @return getBankKey returns an Integer.
      */
     public Integer getBankKey()
     {
@@ -34,7 +33,7 @@ public class BankAccount extends Account implements Serializable
 
     /**
      * getAccountNumber: returns the account number
-     * @return
+     * @return getAccountNumber returns an Integer.
      */
     public Integer getAccountNumber()
     {
@@ -43,7 +42,7 @@ public class BankAccount extends Account implements Serializable
 
     /**
      * getBalance: returns the current balance
-     * @return
+     * @return getBalance returns a Double
      */
     public Double getBalance()
     {
@@ -57,7 +56,7 @@ public class BankAccount extends Account implements Serializable
      * @param update how to update the account
      * @param amount the number to be added or subtracted from the balance
      */
-    public void updateBalance(String update, int amount)
+    private void updateBalance(String update, int amount)
     {
         if(update.toLowerCase().equals("withdraw"))
         {
@@ -76,7 +75,7 @@ public class BankAccount extends Account implements Serializable
     /**
      * newAccountnumber: Generates a new account number. Used when there is a duplicate account number
      */
-    public void newAccountNumber()
+    void newAccountNumber()
     {
         generateAccountNumber();
     }
@@ -84,7 +83,7 @@ public class BankAccount extends Account implements Serializable
     /**
      * newBankKey: Generates a new bank key. Used when there is a duplicate bank key
      */
-    public void newBankKey()
+    void newBankKey()
     {
         generatebankKey();
     }
@@ -92,10 +91,10 @@ public class BankAccount extends Account implements Serializable
     /**
      * setHoldBalance: Takes in a amount and sets the account's fundsInHold to that amount and deducts that amount from
      * the account's balance.
-     * @param amount
-     * @return
+     * @param amount - Amount of money to be placed on hold.
+     * @return setHoldBalance returns a boolean
      */
-    public boolean setHoldBalance(int amount)
+    boolean setHoldBalance(int amount)
     {
         if(balance >= amount)
         {
@@ -110,9 +109,9 @@ public class BankAccount extends Account implements Serializable
 
     /**
      * getHoldBalance: returns the amount in fundsInHold
-     * @return
+     * @return getHoldBalance returns an int.
      */
-    public int getHoldBalance()
+    private int getHoldBalance()
     {
         return fundsInHold;
     }
@@ -120,10 +119,10 @@ public class BankAccount extends Account implements Serializable
     /**
      * deductHoldAmount: Checks if the current balance of fundsInHold is greater or equal to the amount passed in. If it is
      * it deducts the amount from fundsInHold.
-     * @param amount
-     * @return
+     * @param amount - Amount of money to be deducted from account.
+     * @return deductHoldAmount returns a boolean.
      */
-    public boolean deductHoldAmount(int amount)
+    boolean deductHoldAmount(int amount)
     {
         if(fundsInHold >= amount)
         {
@@ -136,10 +135,10 @@ public class BankAccount extends Account implements Serializable
     /**
      * clearHold: Takes a specific amount and deducts it from the fundsInHold and puts that amount back into the account's
      * balance by calling updateBalance
-     * @param amount
-     * @return
+     * @param amount - Amount of money to be released from a hold.
+     * @return clearHold returns a boolean
      */
-    public boolean clearHold(int amount)
+    boolean clearHold(int amount)
     {
         if(fundsInHold >= amount)
         {
@@ -154,9 +153,9 @@ public class BankAccount extends Account implements Serializable
 
     /**
      * inquiry: Prints the available balance and fundsInHold if there are fundsInHold
-     * @return
+     * @return inquiry returns a String.
      */
-    public String inquiry()
+    String inquiry()
     {
         String messgae = "";
 

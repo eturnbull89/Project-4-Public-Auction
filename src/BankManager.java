@@ -19,29 +19,37 @@ public class BankManager
     public static void main(String[] args)
     {
         Bank bank = new Bank();
+        int numArgs = 2;
+
+        if(numArgs != args.length)
+        {
+            System.out.println("Incorrect number of arguments");
+        }
+
         try
         {
             //Auction Central Connection
-            ServerSocket auctionCentralServerConnect = new ServerSocket(1026);
-            Socket clientAC = auctionCentralServerConnect.accept();
+            ServerSocket auctionCentralServerConnect = new ServerSocket(Integer.parseInt(args[0]));
+            Socket clientAuctionCentral = auctionCentralServerConnect.accept();
 
-            ObjectOutputStream auctionCentralOut = new ObjectOutputStream(clientAC.getOutputStream());
+            ObjectOutputStream auctionCentralOut = new ObjectOutputStream(clientAuctionCentral.getOutputStream());
             auctionCentralOut.flush();
-            ObjectInputStream auctionCentralIn = new ObjectInputStream(clientAC.getInputStream());
+            ObjectInputStream auctionCentralIn = new ObjectInputStream(clientAuctionCentral.getInputStream());
 
             //Handle objects from Auction Central
-            BankServerCommunication commWithAuctionCentral = new BankServerCommunication(bank, clientAC, auctionCentralOut, auctionCentralIn);
+            BankServerCommunication commWithAuctionCentral = new BankServerCommunication(bank, clientAuctionCentral, auctionCentralOut, auctionCentralIn);
 
+            //Agent Connection
             ServerSocket agentServerConnect = null;
             Socket clientAgent = null;
 
             try
             {
-              agentServerConnect = new ServerSocket(1031);
-            }    //try to setup server socket on port
+                agentServerConnect = new ServerSocket(Integer.parseInt(args[1]));
+            }
             catch (IOException e)
             {
-              e.printStackTrace();
+                e.printStackTrace();
             }
 
             while(true)
@@ -55,7 +63,7 @@ public class BankManager
                     e.printStackTrace();
                 }
 
-                //new thread for agent client
+                //New thread for every agent
                 BankServerCommunication readingForAgent = new BankServerCommunication(bank, clientAgent, null, null);
             }
         }
@@ -65,4 +73,3 @@ public class BankManager
         }
     }
 }
-
