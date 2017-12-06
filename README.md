@@ -65,3 +65,11 @@ winners list that is maintained. These statements were kept in to verify that th
 
 ==============================================
 
+===========How To Use Auction Central=========
+
+
+Auction Central is ran from the AuctionCentralServer class. 
+
+The AuctionCentralServer takes in three command line arguments.The first arguments is the bank server IP. It is important to ensure the bank server is running before launching AuctiuonCentralServer. The second argument is the port number that the bank uses to connect to AuctionCentral. This port number should be the same number given to the BankManager class as it's first command line argument. The third argument should be the port number on which you wish to run the AuctionCentralServer. This number should not match any argument given to the BankManager. If BankManager gets run with arguments [1027] [1028] on ExampleHostName then the AuctionCentralServer should be launched with arguments [ExampleHostName] [1027] [Any number that != 1027 || 1028] 
+
+If a global boolean called DEBUG is set to true then when the AuctionCentralServer runs debug statements will print on the CommandLine to show where the AuctionCentral is currently executing. If this is set to false the AuctionCentral has no print statements other when a house or agent disconnects to notify that a disconnect occured. 
