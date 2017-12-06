@@ -4,7 +4,7 @@ import java.io.Serializable;
  * Tristin Glunt
  * WinnerInquire is used by Agent to figure out if they won the item.
  */
-public class WinnerInquire implements Serializable
+class WinnerInquire implements Serializable
 {
   private final AuctionItem auctionItem;
 
@@ -15,7 +15,7 @@ public class WinnerInquire implements Serializable
    * @param auctionItem the item passed in
    * @param biddingKey the bidding key for the agent
    */
-  public WinnerInquire(AuctionItem auctionItem, int biddingKey)
+  WinnerInquire(AuctionItem auctionItem, int biddingKey)
   {
     this.auctionItem = auctionItem;
 
@@ -26,7 +26,7 @@ public class WinnerInquire implements Serializable
    * Returns the bidding key
    * @return the bidding key
    */
-  public int getBiddingKey()
+  int getBiddingKey()
   {
     return biddingKey;
   }
@@ -35,7 +35,7 @@ public class WinnerInquire implements Serializable
    * Returns the auction item
    * @return the auction item
    */
-  public AuctionItem getAuctionItem()
+  AuctionItem getAuctionItem()
   {
     return auctionItem;
   }
