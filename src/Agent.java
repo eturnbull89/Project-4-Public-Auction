@@ -51,7 +51,7 @@ public class Agent
         if(args.length != 5)
         {
             System.err.println("Please retry and input the bank hostName, auction central hostname, portNumber of the bank, portNumber "
-                                + "of the auction central and your user name.");
+                    + "of the auction central and your user name.");
             System.exit(1);
         }
 
@@ -270,7 +270,7 @@ public class Agent
             updateListOfAuctionItems();       //get the new list of items whenever we exit out of an item
 
             System.out.println((char) 27 + "[33m\nMain Menu\\AuctionCentral\\" + auctionHouse.getHouseName()
-                                + (char) 27 + "[0m");
+                    + (char) 27 + "[0m");
             printListOfAuctionItems(listOfAuctionItems, 0);
             System.out.println("Which auction item would you like to bid on? Or type Exit to leave auction house");
 
@@ -358,7 +358,7 @@ public class Agent
                     {
                         //TODO need to send AuctionHouse that the bid was failed still, so we can still know that the bid is over.
                         System.out.print((char) 27 + "[31mYou do not have those funds available, enter a lower bid."
-                                        + (char) 27 + "[0m");
+                                + (char) 27 + "[0m");
                         continue;
 
                     }
@@ -367,14 +367,14 @@ public class Agent
                     {
 
                         System.out.print((char) 27 + "[31mYour bid was rejected. Try bidding higher than the current bid."
-                                            + (char) 27 + "[0m");
+                                + (char) 27 + "[0m");
 
                     }
                     else if(bidAmount > bankAccount.getBalance())
                     {
 
                         System.out.print((char) 27 + "[31mYou do not have the available funds for that bid"
-                                        + (char) 27 + "[0m");
+                                + (char) 27 + "[0m");
 
                     }
                     else
@@ -394,7 +394,7 @@ public class Agent
                         {
 
                             System.out.print((char) 27 + "[31mYour bid was passed, you're already winning the auction!"
-                                            + (char) 27 + "[0m");
+                                    + (char) 27 + "[0m");
                             agentBidOnItem.setBidAmount(agentBidOnItem.getItemBiddingOn().getHighestBid());
 
                         }
@@ -402,14 +402,14 @@ public class Agent
                         {
 
                             System.out.print((char) 27 + "[32m******You're currently winning the auction******"
-                                            + (char) 27 + "[0m");
+                                    + (char) 27 + "[0m");
 
                         }
                         else if(agentBidOnItem.getBidStatus().toLowerCase().equals("reject"))
                         {
 
                             System.out.print((char) 27 + "[31mYour bid was rejected. Try bidding higher than the current bid."
-                                            + (char) 27 + "[0m");
+                                    + (char) 27 + "[0m");
 
                         }
                     }
