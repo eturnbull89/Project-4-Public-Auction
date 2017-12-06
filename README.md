@@ -34,7 +34,7 @@ that AuctionCentralServer will connect to and the second argument is the port nu
 will accept multiple connections for Agent's so multiple agents can create accounts at the same time. BankManager does not accept
 multiple connections from AuctionCentral it assumes that once the connection is made it lasts till the program is exited. After the
 Bank connects to AuctionCentral it supports operations to put funds in hold (they bid on a item), release the funds back to the
-agents account (they lost a auction) and withdrawing the funds from the agents account (when they won a auction). When BankManager
+agents account (they lost an auction) and withdrawing the funds from the agents account (when they won a auction). When BankManager
 established a connection to the Agent it takes the name passed in and uses that to create a unique account number, unique bankKey
 and sets all agent's balance to 100. BankManager also checks for duplicate account numbers and bankKeys every time a new account is
 set up to make sure they are all unique. When BankManager is being run it prints out certain statements that are not test statements
@@ -65,3 +65,11 @@ winners list that is maintained. These statements were kept in to verify that th
 
 ==============================================
 
+===========How To Use Auction Central=========
+
+
+Auction Central is ran from the AuctionCentralServer class. 
+
+The AuctionCentralServer takes in three command line arguments.The first arguments is the bank server IP. It is important to ensure the bank server is running before launching AuctiuonCentralServer. The second argument is the port number that the bank uses to connect to AuctionCentral. This port number should be the same number given to the BankManager class as it's first command line argument. The third argument should be the port number on which you wish to run the AuctionCentralServer. This number should not match any argument given to the BankManager. If BankManager gets run with arguments [1027] [1028] on Bank IP then the AuctionCentralServer should be launched with arguments [Bank IP] [1027] [Any number that != 1027 || 1028] 
+
+If a global boolean called DEBUG is set to true then when the AuctionCentralServer runs debug statements will print on the CommandLine to show where the AuctionCentral is currently executing. If this is set to false the AuctionCentral has no print statements other when a house or agent disconnects to notify that a disconnect occured. 
