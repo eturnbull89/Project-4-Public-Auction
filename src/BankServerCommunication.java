@@ -9,9 +9,9 @@ import java.net.Socket;
  */
 public class BankServerCommunication implements Runnable
 {
-    Bank bank;
-    ObjectOutputStream out;
-    ObjectInputStream in;
+    private Bank bank;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
 
     /**
      * BankServerCommunication: Constructor sets the object input and output streams and starts a new thread for every
