@@ -356,7 +356,6 @@ public class Agent
 
                     if(!checkBidWithBank(bidAmount))
                     {
-                        //TODO need to send AuctionHouse that the bid was failed still, so we can still know that the bid is over.
                         System.out.print((char) 27 + "[31mYou do not have those funds available, enter a lower bid."
                                 + (char) 27 + "[0m");
                         continue;
